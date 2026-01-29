@@ -1,6 +1,8 @@
+# tools/schemas.py
 """Tool JSON schemas for Claude's function calling."""
 
 from typing import List
+from agents.config import AGENT_TYPES
 
 # =============================================================================
 # Base Tools
@@ -64,28 +66,16 @@ BASE_TOOLS = [
     },
 ]
 
-# =============================================================================
-# Subagent Types
-# =============================================================================
-
-AGENT_TYPES = {
-    "analyze_story": {
-        "description": "Analyze a single HN story for interest, controversy, technical significance. Read the article, check comments, and provide verdict. Write the final analysis report in Chinese.",
-        "tools": ["read_file", "write_file", "read_webpage"],
-    },
-}
-
-
-def get_agent_descriptions() -> str:
-    """Generate agent type descriptions for system prompt."""
-    return "\n".join(
-        f"- {name}: {cfg['description']}" for name, cfg in AGENT_TYPES.items()
-    )
-
 
 # =============================================================================
 # Task Tool - Spawn Subagents
 # =============================================================================
+
+def get_agent_descriptions() -> str:
+    """Generate agent type descriptions."""
+    return "\\n".join(
+        f"- {name}: {cfg['description']}" for name, cfg in AGENT_TYPES.items()
+    )
 
 TASK_TOOL = {
     "name": "Task",

@@ -1,10 +1,10 @@
 # agents/main.py
 """Main agent for HN exploration."""
 from .base import BaseAgent
+from .config import AGENT_TYPES
 from config import MODEL, MAX_TOKENS, DEBUG, MAX_TOOL_CALLS, WORKDIR
 from prompts.system import SYSTEM_PROMPT
 from tools import get_tool_schemas, get_tool_class
-from tools.schemas import AGENT_TYPES
 
 class NewsExplorerAgent(BaseAgent):
     """Main agent that explores HN."""
