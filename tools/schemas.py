@@ -71,7 +71,7 @@ BASE_TOOLS = [
 AGENT_TYPES = {
     "analyze_story": {
         "description": "Analyze a single HN story for interest, controversy, technical significance. Read the article, check comments, and provide verdict.",
-        "tools": ["read_file", "write_file"],
+        "tools": ["read_file", "write_file", "read_webpage"],
     },
 }
 

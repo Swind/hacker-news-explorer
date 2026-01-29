@@ -8,21 +8,21 @@ Follows the v4_skills_agent.py pattern:
 - Tool results appended with correct structure
 - Subagent delegation for independent story analysis
 """
+import json
 import os
-import sys
 import re
 import subprocess
-import json
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
 
 from anthropic import Anthropic
 from anthropic.types import ToolUseBlock
+from dotenv import load_dotenv
 
 from adapters.hackernews import HackerNewsAdapter
 from adapters.web_reader import WebReaderAdapter
-from tools.schemas import ALL_TOOLS, AGENT_TYPES, BASE_TOOLS
 from prompts.system import SYSTEM_PROMPT
+from tools.schemas import AGENT_TYPES, ALL_TOOLS, BASE_TOOLS
 
 load_dotenv()
 
@@ -63,7 +63,7 @@ class NewsExplorerAgent:
             elif tool_name == "get_hn_stories":
                 result = self.hn.get_stories(
                     story_type=tool_input["story_type"],
-                    limit=tool_input.get("limit", 10)
+                    limit=tool_input.get("limit", 10),
                 )
                 return self._format_stories(result)
 
@@ -73,8 +73,7 @@ class NewsExplorerAgent:
 
             elif tool_name == "get_hn_comments":
                 result = self.hn.get_comments(
-                    story_id=tool_input["story_id"],
-                    limit=tool_input.get("limit", 20)
+                    story_id=tool_input["story_id"], limit=tool_input.get("limit", 20)
                 )
                 return self._format_comments(result)
 
@@ -85,7 +84,9 @@ class NewsExplorerAgent:
                     title = result.get("title", "")
                     output = f"Title: {title}\n\n{content[:10000]}"
                     if len(content) > 10000:
-                        output += f"\n\n... (content truncated, was {len(content)} chars)"
+                        output += (
+                            f"\n\n... (content truncated, was {len(content)} chars)"
+                        )
                     return output
                 else:
                     return f"Failed to read webpage: {result['error']}"
@@ -94,7 +95,7 @@ class NewsExplorerAgent:
                 return self._run_subagent(
                     tool_input["agent_type"],
                     tool_input["description"],
-                    tool_input["prompt"]
+                    tool_input["prompt"],
                 )
 
             elif tool_name == "finish_exploration":
@@ -103,7 +104,9 @@ class NewsExplorerAgent:
                 stories = tool_input.get("interesting_stories", [])
                 output = f"**EXPLORATION FINISHED**\n\nSummary: {self.final_summary}"
                 if stories:
-                    output += f"\n\nInteresting stories:\n" + "\n".join(f"- {s}" for s in stories)
+                    output += f"\n\nInteresting stories:\n" + "\n".join(
+                        f"- {s}" for s in stories
+                    )
                 return output
 
             else:
@@ -146,7 +149,9 @@ class NewsExplorerAgent:
             line = f"[{s['id']}] {s['title']}"
             if s.get("url"):
                 line += f" ({s['url']})"
-            line += f" | score: {s['score']} | comments: {s['descendants']} | by: {s['by']}"
+            line += (
+                f" | score: {s['score']} | comments: {s['descendants']} | by: {s['by']}"
+            )
             lines.append(line)
         return "\n".join(lines)
 
@@ -184,6 +189,7 @@ class NewsExplorerAgent:
 
         config = AGENT_TYPES[agent_type]
         from datetime import datetime
+
         today = datetime.now().strftime("%Y-%m-%d")
 
         sub_system = f"""You are a {agent_type} subagent at {WORKDIR}.
@@ -195,7 +201,9 @@ Today's date: {today}
 Complete the task and return a clear, concise summary."""
 
         # Filter tools for subagent (only BASE_TOOLS for analyze_story)
-        sub_tools = [t for t in BASE_TOOLS if t["name"] in config.get("tools", BASE_TOOLS)]
+        sub_tools = [
+            t for t in BASE_TOOLS if t["name"] in config.get("tools", BASE_TOOLS)
+        ]
         sub_messages = [{"role": "user", "content": prompt}]
 
         if DEBUG:
@@ -254,12 +262,12 @@ Complete the task and return a clear, concise summary."""
                     print(f"  Input: {json.dumps(tc.input, indent=2)}")
                 result = self._execute_tool_for_subagent(tc.name, tc.input)
                 if DEBUG:
-                    print(f"  Result: {result[:200]}{'...' if len(result) > 200 else ''}")
-                results.append({
-                    "type": "tool_result",
-                    "tool_use_id": tc.id,
-                    "content": result
-                })
+                    print(
+                        f"  Result: {result[:200]}{'...' if len(result) > 200 else ''}"
+                    )
+                results.append(
+                    {"type": "tool_result", "tool_use_id": tc.id, "content": result}
+                )
 
             # Append tool results
             sub_messages.append({"role": "user", "content": results})
@@ -278,6 +286,19 @@ Complete the task and return a clear, concise summary."""
                 return self._read_file(tool_input["path"], tool_input.get("limit"))
             elif tool_name == "write_file":
                 return self._write_file(tool_input["path"], tool_input["content"])
+            elif tool_name == "read_webpage":
+                result = self.web_reader.read(tool_input["url"])
+                if result["success"]:
+                    content = result["content"]
+                    title = result.get("title", "")
+                    output = f"Title: {title}\n\n{content[:10000]}"
+                    if len(content) > 10000:
+                        output += (
+                            f"\n\n... (content truncated, was {len(content)} chars)"
+                        )
+                    return output
+                else:
+                    return f"Failed to read webpage: {result['error']}"
             else:
                 return f"Unknown tool for subagent: {tool_name}"
         except Exception as e:
@@ -294,9 +315,7 @@ Complete the task and return a clear, concise summary."""
         print(f"Debug mode: {DEBUG}")
         print("-" * 50)
 
-        messages = [
-            {"role": "user", "content": user_message}
-        ]
+        messages = [{"role": "user", "content": user_message}]
 
         turn = 0
         while not self.is_finished and self.tool_call_count < MAX_TOOL_CALLS:
@@ -306,7 +325,9 @@ Complete the task and return a clear, concise summary."""
                 print(f"TURN {turn} - Sending request to Anthropic API")
                 print(f"{'='*60}")
                 print(f"Messages count: {len(messages)}")
-                print(f"Tool call count so far: {self.tool_call_count}/{MAX_TOOL_CALLS}")
+                print(
+                    f"Tool call count so far: {self.tool_call_count}/{MAX_TOOL_CALLS}"
+                )
 
             response = self.client.messages.create(
                 model=MODEL,
@@ -352,7 +373,9 @@ Complete the task and return a clear, concise summary."""
             if response.stop_reason != "tool_use" or not tool_calls:
                 if DEBUG:
                     print(f"\n{'='*60}")
-                    print(f"STOP: stop_reason={response.stop_reason}, tool_calls={len(tool_calls)}")
+                    print(
+                        f"STOP: stop_reason={response.stop_reason}, tool_calls={len(tool_calls)}"
+                    )
                     print(f"{'='*60}")
                 break
 
@@ -382,11 +405,9 @@ Complete the task and return a clear, concise summary."""
                     preview = result[:200] + "..." if len(result) > 200 else result
                     print(f"  {preview}")
 
-                results.append({
-                    "type": "tool_result",
-                    "tool_use_id": tc.id,
-                    "content": result
-                })
+                results.append(
+                    {"type": "tool_result", "tool_use_id": tc.id, "content": result}
+                )
 
             # Append tool results as user message
             messages.append({"role": "user", "content": results})
