@@ -1,0 +1,100 @@
+# agents/subagent.py
+"""Subagent for isolated task execution."""
+from .base import BaseAgent
+from config import MODEL, MAX_TOKENS, DEBUG
+from prompts.subagent import get_subagent_prompt
+from tools import get_tool_class
+
+class SubAgent(BaseAgent):
+    """Subagent with limited tool access."""
+
+    def __init__(self, client, agent_type: str, allowed_tool_names: list, workdir: str):
+        # Filter tools to only allowed ones
+        from tools import get_tool_schemas
+        all_schemas = get_tool_schemas()
+        allowed_tools = [s for s in all_schemas if s["name"] in allowed_tool_names]
+
+        super().__init__(client, tools=allowed_tools, max_tokens=MAX_TOKENS)
+        self.agent_type = agent_type
+        self.workdir = workdir
+        self.allowed_tool_names = allowed_tool_names
+
+    def get_system_prompt(self) -> str:
+        return get_subagent_prompt(self.agent_type, self.workdir)
+
+    def should_stop(self, response, is_finished: bool = False) -> bool:
+        return response.stop_reason != "tool_use"
+
+    def execute_tool(self, tool_name: str, tool_input: dict) -> str:
+        """Execute a tool with limited set."""
+        if tool_name not in self.allowed_tool_names:
+            return f"Unknown tool for subagent: {tool_name}"
+
+        # Get tool class and execute
+        tool_class = get_tool_class(tool_name)
+        context = self._get_context()
+        tool = tool_class(context)
+        self.tool_call_count += 1
+        return tool.execute(**tool_input)
+
+    def _get_context(self) -> dict:
+        """Build execution context."""
+        from adapters.hackernews import HackerNewsAdapter
+        from adapters.web_reader import WebReaderAdapter
+        from pathlib import Path
+
+        return {
+            "workdir": Path(self.workdir),
+            "hn_adapter": HackerNewsAdapter(),
+            "web_reader": WebReaderAdapter(),
+        }
+
+    def run(self, prompt: str) -> str:
+        """Run the subagent with a prompt."""
+        messages = [{"role": "user", "content": prompt}]
+
+        while True:
+            response = self.client.messages.create(
+                model=MODEL,
+                system=self.get_system_prompt(),
+                messages=messages,
+                tools=self.tools,
+                max_tokens=self.max_tokens,
+            )
+
+            # Extract text and tool calls
+            text_blocks = []
+            tool_calls = []
+
+            for block in response.content:
+                if hasattr(block, "text") and block.text:
+                    text_blocks.append(block.text)
+                if block.type == "tool_use":
+                    tool_calls.append(block)
+
+            # Append assistant message
+            messages.append({"role": "assistant", "content": response.content})
+
+            # Check stop condition
+            if self.should_stop(response):
+                break
+
+            # Execute tools
+            results = []
+            for tc in tool_calls:
+                result = self.execute_tool(tc.name, tc.input)
+                results.append({
+                    "type": "tool_result",
+                    "tool_use_id": tc.id,
+                    "content": result
+                })
+
+            # Append tool results
+            messages.append({"role": "user", "content": results})
+
+        # Get final text
+        for block in response.content:
+            if hasattr(block, "text") and block.text:
+                return f"[{self.agent_type}] done ({self.tool_call_count} tools)\n{block.text}"
+
+        return f"[{self.agent_type}] done ({self.tool_call_count} tools)\n(no text returned)"
