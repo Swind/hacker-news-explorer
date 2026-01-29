@@ -8,6 +8,7 @@ from .hn_stories import GetHNStoriesTool
 from .hn_item import GetHNItemTool
 from .hn_comments import GetHNCommentsTool
 from .finish import FinishExplorationTool
+from .task import TaskTool
 
 # All tool classes
 ALL_TOOL_CLASSES = [
@@ -18,6 +19,7 @@ ALL_TOOL_CLASSES = [
     GetHNItemTool,
     GetHNCommentsTool,
     FinishExplorationTool,
+    TaskTool,
 ]
 
 def get_tool_schemas() -> list:

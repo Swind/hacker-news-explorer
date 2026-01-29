@@ -1,6 +1,6 @@
 """Subagent system prompts."""
 from datetime import datetime
-from tools.schemas import AGENT_TYPES
+from agents.config import AGENT_TYPES
 
 def get_subagent_prompt(agent_type: str, workdir: str) -> str:
     """Generate system prompt for specific subagent type."""
