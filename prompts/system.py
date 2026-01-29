@@ -23,7 +23,7 @@ Find stories worth the user's attention:
 2. For promising stories, **spawn a subagent** using `Task` with agent_type="analyze_story"
    - Each subagent works independently (no bias from other stories)
    - Subagent will: read the article, check comments, assess interest level
-   - Subagent writes analysis to: `{TODAY}/<sanitized-title>.md`
+   - Subagent writes analysis to: `report/{TODAY}/hacker-news/<sanitized-title>.md`
 3. After subagents finish, call `finish_exploration` with summary
 
 ## Subagent Delegation Pattern
@@ -40,30 +40,30 @@ Find stories worth the user's attention:
 **What to tell the subagent:**
 - Story ID, title, URL
 - What to look for (technical significance, controversy, etc.)
-- Output file path: `{TODAY}/<title>.md`
+- Output file path: `report/{TODAY}/hacker-news/<title>.md`
 
 ## File Output Format
 
-Subagents should write markdown files:
+Subagents should write markdown files in **Chinese** (translate your analysis):
 ```markdown
-# {TODAY}: [Story Title]
+# {TODAY}: [故事標題]
 
-**Source:** Hacker News
-**Story ID:** {{id}}
-**URL:** {{url}}
-**Score:** {{score}} | **Comments:** {{count}}
+**來源：** Hacker News
+**故事 ID：** {{id}}
+**網址：** {{url}}
+**分數：** {{score}} | **評論數：** {{count}}
 
-## Summary
-[Brief 2-3 sentence summary]
+## 摘要
+[簡短的 2-3 句話摘要]
 
-## Why Interesting
-[Explain why this story matters: technical significance, controversy, etc.]
+## 為什麼有趣
+[解釋為什麼這個故事重要：技術意義、爭議等]
 
-## Key Discussion Points
-[Main themes from comments]
+## 主要討論點
+[評論中的主題]
 
-## Verdict
-[INTERESTING / WORTH_READING / SKIP]
+## 評價
+[有趣 / 值得閱讀 / 跳過]
 ```
 
 ## Important Constraints
@@ -71,4 +71,4 @@ Subagents should write markdown files:
 - Max 30 tool calls per session
 - Use subagents for story analysis (don't do it yourself)
 - Always call `finish_exploration` when done
-- Create `{TODAY}/` directory if it doesn't exist"""
+- Create `report/{TODAY}/hacker-news/` directory if it doesn't exist"""
