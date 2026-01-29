@@ -13,11 +13,14 @@ BASE_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "path": {"type": "string", "description": "File path relative to workspace"},
-                "limit": {"type": "integer", "description": "Max lines to read"}
+                "path": {
+                    "type": "string",
+                    "description": "File path relative to workspace",
+                },
+                "limit": {"type": "integer", "description": "Max lines to read"},
             },
-            "required": ["path"]
-        }
+            "required": ["path"],
+        },
     },
     {
         "name": "write_file",
@@ -25,11 +28,39 @@ BASE_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "path": {"type": "string", "description": "File path relative to workspace"},
-                "content": {"type": "string", "description": "Content to write"}
+                "path": {
+                    "type": "string",
+                    "description": "File path relative to workspace",
+                },
+                "content": {"type": "string", "description": "Content to write"},
             },
-            "required": ["path", "content"]
-        }
+            "required": ["path", "content"],
+        },
+    },
+    {
+        "name": "read_webpage",
+        "description": "Read the full content of a webpage. Returns main article text.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"url": {"type": "string"}},
+            "required": ["url"],
+        },
+    },
+    {
+        "name": "finish_exploration",
+        "description": "Stop exploration and provide summary. Call when you've found enough interesting content.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "summary": {"type": "string"},
+                "interesting_stories": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Paths to story analysis files",
+                },
+            },
+            "required": ["summary"],
+        },
     },
 ]
 
@@ -44,11 +75,13 @@ AGENT_TYPES = {
     },
 }
 
+
 def get_agent_descriptions() -> str:
     """Generate agent type descriptions for system prompt."""
     return "\n".join(
         f"- {name}: {cfg['description']}" for name, cfg in AGENT_TYPES.items()
     )
+
 
 # =============================================================================
 # Task Tool - Spawn Subagents
@@ -69,20 +102,20 @@ their analysis to a file.""",
         "properties": {
             "description": {
                 "type": "string",
-                "description": "Short task description (3-5 words)"
+                "description": "Short task description (3-5 words)",
             },
             "prompt": {
                 "type": "string",
-                "description": "Detailed instructions for the subagent"
+                "description": "Detailed instructions for the subagent",
             },
             "agent_type": {
                 "type": "string",
                 "enum": list(AGENT_TYPES.keys()),
-                "description": "Type of subagent to spawn"
-            }
+                "description": "Type of subagent to spawn",
+            },
         },
-        "required": ["description", "prompt", "agent_type"]
-    }
+        "required": ["description", "prompt", "agent_type"],
+    },
 }
 
 # =============================================================================
@@ -98,23 +131,21 @@ HN_TOOLS = [
             "properties": {
                 "story_type": {
                     "type": "string",
-                    "enum": ["top", "new", "best", "ask", "show", "job"]
+                    "enum": ["top", "new", "best", "ask", "show", "job"],
                 },
-                "limit": {"type": "integer", "minimum": 1, "maximum": 30}
+                "limit": {"type": "integer", "minimum": 1, "maximum": 30},
             },
-            "required": ["story_type"]
-        }
+            "required": ["story_type"],
+        },
     },
     {
         "name": "get_hn_item",
         "description": "Fetch a specific HN item (story, comment, job) by ID.",
         "input_schema": {
             "type": "object",
-            "properties": {
-                "item_id": {"type": "integer"}
-            },
-            "required": ["item_id"]
-        }
+            "properties": {"item_id": {"type": "integer"}},
+            "required": ["item_id"],
+        },
     },
     {
         "name": "get_hn_comments",
@@ -123,38 +154,11 @@ HN_TOOLS = [
             "type": "object",
             "properties": {
                 "story_id": {"type": "integer"},
-                "limit": {"type": "integer", "minimum": 1, "maximum": 50}
+                "limit": {"type": "integer", "minimum": 1, "maximum": 50},
             },
-            "required": ["story_id"]
-        }
+            "required": ["story_id"],
+        },
     },
-    {
-        "name": "read_webpage",
-        "description": "Read the full content of a webpage. Returns main article text.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "url": {"type": "string"}
-            },
-            "required": ["url"]
-        }
-    },
-    {
-        "name": "finish_exploration",
-        "description": "Stop exploration and provide summary. Call when you've found enough interesting content.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "summary": {"type": "string"},
-                "interesting_stories": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Paths to story analysis files"
-                }
-            },
-            "required": ["summary"]
-        }
-    }
 ]
 
 # =============================================================================

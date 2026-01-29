@@ -12,6 +12,7 @@ import os
 import sys
 import re
 import subprocess
+import json
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -29,6 +30,7 @@ load_dotenv()
 MODEL = os.getenv("MODEL_ID", "claude-sonnet-4-5-20250929")
 MAX_TOOL_CALLS = 30
 WORKDIR = Path.cwd()
+DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "1", "yes")
 
 
 class NewsExplorerAgent:
@@ -196,10 +198,22 @@ Complete the task and return a clear, concise summary."""
         sub_tools = [t for t in BASE_TOOLS if t["name"] in config.get("tools", BASE_TOOLS)]
         sub_messages = [{"role": "user", "content": prompt}]
 
-        print(f"  [{agent_type}] {description}")
+        if DEBUG:
+            print(f"\n  📤 SPAWNING SUBAGENT: {agent_type}")
+            print(f"  Description: {description}")
+            print(f"  Available tools: {[t['name'] for t in sub_tools]}")
+        else:
+            print(f"  [{agent_type}] {description}")
         tool_count = 0
 
+        sub_turn = 0
         while True:
+            sub_turn += 1
+            if DEBUG:
+                print(f"\n  {'─'*40}")
+                print(f"  SUBAGENT TURN {sub_turn}")
+                print(f"  {'─'*40}")
+
             response = self.client.messages.create(
                 model=MODEL,
                 system=sub_system,
@@ -207,6 +221,10 @@ Complete the task and return a clear, concise summary."""
                 tools=sub_tools,
                 max_tokens=4096,
             )
+
+            if DEBUG:
+                print(f"  Stop reason: {response.stop_reason}")
+                print(f"  Output tokens: {response.usage.output_tokens}")
 
             # Collect text and tool calls
             text_blocks = []
@@ -223,13 +241,20 @@ Complete the task and return a clear, concise summary."""
 
             # Check stop condition
             if response.stop_reason != "tool_use" or not tool_calls:
+                if DEBUG:
+                    print(f"  🏁 SUBAGENT FINISHED")
                 break
 
             # Execute tools
             results = []
             for tc in tool_calls:
                 tool_count += 1
+                if DEBUG:
+                    print(f"\n  > SUBAGENT TOOL: {tc.name}")
+                    print(f"  Input: {json.dumps(tc.input, indent=2)}")
                 result = self._execute_tool_for_subagent(tc.name, tc.input)
+                if DEBUG:
+                    print(f"  Result: {result[:200]}{'...' if len(result) > 200 else ''}")
                 results.append({
                     "type": "tool_result",
                     "tool_use_id": tc.id,
@@ -266,13 +291,23 @@ Complete the task and return a clear, concise summary."""
         print(f"🤖 News Explorer Agent - {WORKDIR}")
         print(f"Model: {MODEL}")
         print(f"Max tool calls: {MAX_TOOL_CALLS}")
+        print(f"Debug mode: {DEBUG}")
         print("-" * 50)
 
         messages = [
             {"role": "user", "content": user_message}
         ]
 
+        turn = 0
         while not self.is_finished and self.tool_call_count < MAX_TOOL_CALLS:
+            turn += 1
+            if DEBUG:
+                print(f"\n{'='*60}")
+                print(f"TURN {turn} - Sending request to Anthropic API")
+                print(f"{'='*60}")
+                print(f"Messages count: {len(messages)}")
+                print(f"Tool call count so far: {self.tool_call_count}/{MAX_TOOL_CALLS}")
+
             response = self.client.messages.create(
                 model=MODEL,
                 system=SYSTEM_PROMPT,
@@ -281,38 +316,71 @@ Complete the task and return a clear, concise summary."""
                 max_tokens=4096,
             )
 
+            if DEBUG:
+                print(f"\n{'─'*60}")
+                print(f"RESPONSE FROM ANTHROPIC")
+                print(f"{'─'*60}")
+                print(f"Stop reason: {response.stop_reason}")
+                print(f"Input tokens: {response.usage.input_tokens}")
+                print(f"Output tokens: {response.usage.output_tokens}")
+                print(f"Content blocks: {len(response.content)}")
+
             # Extract text content and tool calls
             text_blocks = []
             tool_calls = []
 
-            for block in response.content:
+            for i, block in enumerate(response.content):
                 if hasattr(block, "text") and block.text:
                     text_blocks.append(block.text)
-                    print(block.text)
+                    if DEBUG:
+                        print(f"\n[TEXT BLOCK {i+1}]")
+                        print(block.text)
+                    else:
+                        print(block.text)
                 if block.type == "tool_use":
                     tool_calls.append(block)
+                    if DEBUG:
+                        print(f"\n[TOOL_USE BLOCK {i+1}]")
+                        print(f"  ID: {block.id}")
+                        print(f"  Name: {block.name}")
+                        print(f"  Input: {json.dumps(block.input, indent=2)}")
 
             # Append assistant message
             messages.append({"role": "assistant", "content": response.content})
 
             # Check stop condition
             if response.stop_reason != "tool_use" or not tool_calls:
+                if DEBUG:
+                    print(f"\n{'='*60}")
+                    print(f"STOP: stop_reason={response.stop_reason}, tool_calls={len(tool_calls)}")
+                    print(f"{'='*60}")
                 break
 
             # Execute tools and build results
             results = []
-            for tc in tool_calls:
-                print(f"\n> {tc.name}")
+            for i, tc in enumerate(tool_calls):
+                if DEBUG:
+                    print(f"\n{'─'*60}")
+                    print(f"EXECUTING TOOL {i+1}/{len(tool_calls)}: {tc.name}")
+                    print(f"{'─'*60}")
+                else:
+                    print(f"\n> {tc.name}")
 
                 # Safety check
                 if self.tool_call_count >= MAX_TOOL_CALLS:
                     result = "Max tool calls reached. Please call finish_exploration."
                 else:
+                    if DEBUG:
+                        print(f"Input: {json.dumps(tc.input, indent=2)}")
                     result = self.execute_tool(tc.name, tc.input)
 
-                # Show preview
-                preview = result[:200] + "..." if len(result) > 200 else result
-                print(f"  {preview}")
+                if DEBUG:
+                    print(f"\nResult ({len(result)} chars):")
+                    print(result)
+                else:
+                    # Show preview
+                    preview = result[:200] + "..." if len(result) > 200 else result
+                    print(f"  {preview}")
 
                 results.append({
                     "type": "tool_result",
@@ -322,6 +390,10 @@ Complete the task and return a clear, concise summary."""
 
             # Append tool results as user message
             messages.append({"role": "user", "content": results})
+            if DEBUG:
+                print(f"\n{'='*60}")
+                print(f"END OF TURN {turn}")
+                print(f"{'='*60}")
 
         # Final summary
         print("\n" + "=" * 50)
