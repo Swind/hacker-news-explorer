@@ -1,5 +1,6 @@
 """Main agent system prompt."""
 from datetime import datetime
+from .templates import CHINESE_OUTPUT_TEMPLATE
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
 
@@ -45,26 +46,7 @@ Find stories worth the user's attention:
 ## File Output Format
 
 Subagents should write markdown files in **Chinese** (translate your analysis):
-```markdown
-# {TODAY}: [故事標題]
-
-**來源：** Hacker News
-**故事 ID：** {{id}}
-**網址：** {{url}}
-**分數：** {{score}} | **評論數：** {{count}}
-
-## 摘要
-[簡短的 2-3 句話摘要]
-
-## 為什麼有趣
-[解釋為什麼這個故事重要：技術意義、爭議等]
-
-## 主要討論點
-[評論中的主題]
-
-## 評價
-[有趣 / 值得閱讀 / 跳過]
-```
+{CHINESE_OUTPUT_TEMPLATE}
 
 ## Important Constraints
 
