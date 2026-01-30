@@ -62,6 +62,10 @@ class SubAgent(BaseAgent):
                 max_tokens=self.max_tokens,
             )
 
+            # DEBUG: Dump LLM response details
+            if DEBUG:
+                print(f"  🔍 [SUBAGENT DEBUG] LLM Response:")
+
             # Extract text and tool calls
             text_blocks = []
             tool_calls = []
@@ -69,8 +73,19 @@ class SubAgent(BaseAgent):
             for block in response.content:
                 if hasattr(block, "text") and block.text:
                     text_blocks.append(block.text)
+                    # DEBUG mode: show text block info and always output text
+                    if DEBUG:
+                        preview = block.text[:100] + "..." if len(block.text) > 100 else block.text
+                        print(f"     📝 [TEXT] {preview}")
+                    print(block.text)
                 if block.type == "tool_use":
                     tool_calls.append(block)
+                    # DEBUG mode: show tool call details
+                    if DEBUG:
+                        print(f"     🔧 [TOOL] {block.name}")
+                        for key, value in block.input.items():
+                            value_preview = str(value)[:100] + "..." if len(str(value)) > 100 else str(value)
+                            print(f"        {key}: {value_preview}")
 
             # Append assistant message
             messages.append({"role": "assistant", "content": response.content})
