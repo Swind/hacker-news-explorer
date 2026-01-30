@@ -54,6 +54,28 @@ class SubAgent(BaseAgent):
         messages = [{"role": "user", "content": prompt}]
 
         while True:
+            # DEBUG: Show what we're sending to LLM
+            if DEBUG:
+                print(f"\n  {'─' * 56}")
+                print(f"  🔍 [SUBAGENT DEBUG] Step {self.tool_call_count + 1}")
+                print(f"  {'─' * 56}")
+                print(f"  📋 Available tools: {[t['name'] for t in self.tools]}")
+                print(f"\n  📨 Sending to LLM:")
+                for msg in messages[-2:] if len(messages) > 2 else messages:
+                    role = msg.get('role', 'unknown')
+                    content = msg.get('content', '')
+                    if isinstance(content, list):
+                        # Tool result message
+                        for item in content:
+                            if item.get('type') == 'tool_result':
+                                tool_id = item.get('tool_use_id', 'unknown')[:8]
+                                result_preview = str(item.get('content', ''))[:80]
+                                print(f"    [{role.upper()}] Tool result ({tool_id}...): {result_preview}...")
+                    else:
+                        # Text message
+                        preview = str(content)[:150] + "..." if len(str(content)) > 150 else str(content)
+                        print(f"    [{role.upper()}] {preview}")
+
             response = self.client.messages.create(
                 model=MODEL,
                 system=self.get_system_prompt(),
@@ -64,7 +86,7 @@ class SubAgent(BaseAgent):
 
             # DEBUG: Dump LLM response details
             if DEBUG:
-                print(f"  🔍 [SUBAGENT DEBUG] LLM Response:")
+                print(f"\n  📥 LLM Response:")
 
             # Extract text and tool calls
             text_blocks = []
