@@ -1,9 +1,11 @@
 # agents/subagent.py
 """Subagent for isolated task execution."""
-from .base import BaseAgent
-from config import MODEL, MAX_TOKENS, DEBUG
+from config import DEBUG, MAX_TOKENS, MODEL
 from prompts.subagent import get_subagent_prompt
 from tools import get_tool_class
+
+from .base import BaseAgent
+
 
 class SubAgent(BaseAgent):
     """Subagent with limited tool access."""
@@ -11,6 +13,7 @@ class SubAgent(BaseAgent):
     def __init__(self, client, agent_type: str, allowed_tool_names: list, workdir: str):
         # Filter tools to only allowed ones
         from tools import get_tool_schemas
+
         all_schemas = get_tool_schemas()
         allowed_tools = [s for s in all_schemas if s["name"] in allowed_tool_names]
 
@@ -39,9 +42,10 @@ class SubAgent(BaseAgent):
 
     def _get_context(self) -> dict:
         """Build execution context."""
+        from pathlib import Path
+
         from adapters.hackernews import HackerNewsAdapter
         from adapters.web_reader import WebReaderAdapter
-        from pathlib import Path
 
         return {
             "workdir": Path(self.workdir),
@@ -62,19 +66,13 @@ class SubAgent(BaseAgent):
                 print(f"  📋 Available tools: {[t['name'] for t in self.tools]}")
                 print(f"\n  📨 Sending to LLM:")
                 for msg in messages[-2:] if len(messages) > 2 else messages:
-                    role = msg.get('role', 'unknown')
-                    content = msg.get('content', '')
+                    role = msg.get("role", "unknown")
+                    content = msg.get("content", "")
                     if isinstance(content, list):
-                        # Tool result message
                         for item in content:
-                            if item.get('type') == 'tool_result':
-                                tool_id = item.get('tool_use_id', 'unknown')[:8]
-                                result_preview = str(item.get('content', ''))[:80]
-                                print(f"    [{role.upper()}] Tool result ({tool_id}...): {result_preview}...")
+                            print(f"    ▪️ ({role}) {item}")
                     else:
-                        # Text message
-                        preview = str(content)[:150] + "..." if len(str(content)) > 150 else str(content)
-                        print(f"    [{role.upper()}] {preview}")
+                        print(f"    ▪️ ({role}) {content}")
 
             response = self.client.messages.create(
                 model=MODEL,
@@ -97,7 +95,11 @@ class SubAgent(BaseAgent):
                     text_blocks.append(block.text)
                     # DEBUG mode: show text block info and always output text
                     if DEBUG:
-                        preview = block.text[:100] + "..." if len(block.text) > 100 else block.text
+                        preview = (
+                            block.text[:100] + "..."
+                            if len(block.text) > 100
+                            else block.text
+                        )
                         print(f"     📝 [TEXT] {preview}")
                     print(block.text)
                 if block.type == "tool_use":
@@ -106,7 +108,11 @@ class SubAgent(BaseAgent):
                     if DEBUG:
                         print(f"     🔧 [TOOL] {block.name}")
                         for key, value in block.input.items():
-                            value_preview = str(value)[:100] + "..." if len(str(value)) > 100 else str(value)
+                            value_preview = (
+                                str(value)[:100] + "..."
+                                if len(str(value)) > 100
+                                else str(value)
+                            )
                             print(f"        {key}: {value_preview}")
 
             # Append assistant message
@@ -120,11 +126,9 @@ class SubAgent(BaseAgent):
             results = []
             for tc in tool_calls:
                 result = self.execute_tool(tc.name, tc.input)
-                results.append({
-                    "type": "tool_result",
-                    "tool_use_id": tc.id,
-                    "content": result
-                })
+                results.append(
+                    {"type": "tool_result", "tool_use_id": tc.id, "content": result}
+                )
 
             # Append tool results
             messages.append({"role": "user", "content": results})

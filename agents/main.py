@@ -1,10 +1,14 @@
 # agents/main.py
 """Main agent for HN exploration."""
+from anthropic.types import TextBlock
+
+from config import DEBUG, MAX_TOKENS, MAX_TOOL_CALLS, MODEL, WORKDIR
+from prompts.system import SYSTEM_PROMPT
+from tools import get_tool_class, get_tool_schemas
+
 from .base import BaseAgent
 from .config import AGENT_TYPES
-from config import MODEL, MAX_TOKENS, DEBUG, MAX_TOOL_CALLS, WORKDIR
-from prompts.system import SYSTEM_PROMPT
-from tools import get_tool_schemas, get_tool_class
+
 
 class NewsExplorerAgent(BaseAgent):
     """Main agent that explores HN."""
@@ -32,15 +36,17 @@ class NewsExplorerAgent(BaseAgent):
             stories = tool_input.get("interesting_stories", [])
             output = f"**EXPLORATION FINISHED**\n\nSummary: {self.final_summary}"
             if stories:
-                output += f"\n\nInteresting stories:\n" + "\n".join(f"- {s}" for s in stories)
+                output += f"\n\nInteresting stories:\n" + "\n".join(
+                    f"- {s}" for s in stories
+                )
             return output
 
         # Handle Task tool (spawn subagent)
         if tool_name == "Task":
             return self._run_subagent(
-                tool_input["agent_type"],
-                tool_input["description"],
-                tool_input["prompt"]
+                tool_input.get("agent_type", ""),
+                tool_input.get("description", ""),
+                tool_input.get("prompt", ""),
             )
 
         # Regular tools
@@ -101,19 +107,13 @@ class NewsExplorerAgent(BaseAgent):
                 print(f"📋 Available tools: {[t['name'] for t in self.tools]}")
                 print(f"\n📨 Sending to LLM:")
                 for msg in messages[-2:] if len(messages) > 2 else messages:
-                    role = msg.get('role', 'unknown')
-                    content = msg.get('content', '')
+                    role = msg.get("role", "unknown")
+                    content = msg.get("content", "")
                     if isinstance(content, list):
-                        # Tool result message
                         for item in content:
-                            if item.get('type') == 'tool_result':
-                                tool_id = item.get('tool_use_id', 'unknown')[:8]
-                                result_preview = str(item.get('content', ''))[:100]
-                                print(f"  [{role.upper()}] Tool result ({tool_id}...): {result_preview}...")
+                            print(f"    ▪️ ({role}) {item}")
                     else:
-                        # Text message
-                        preview = str(content)[:200] + "..." if len(str(content)) > 200 else str(content)
-                        print(f"  [{role.upper()}] {preview}")
+                        print(f"    ▪️ ({role}) {content}")
 
             response = self.client.messages.create(
                 model=MODEL,
@@ -133,7 +133,11 @@ class NewsExplorerAgent(BaseAgent):
                 if hasattr(block, "text") and block.text:
                     # DEBUG mode: show text block info and always output text
                     if DEBUG:
-                        preview = block.text[:100] + "..." if len(block.text) > 100 else block.text
+                        preview = (
+                            block.text[:100] + "..."
+                            if len(block.text) > 100
+                            else block.text
+                        )
                         print(f"  📝 [TEXT] {preview}")
                     print(block.text)
                 if block.type == "tool_use":
@@ -142,7 +146,11 @@ class NewsExplorerAgent(BaseAgent):
                     if DEBUG:
                         print(f"  🔧 [TOOL] {block.name}")
                         for key, value in block.input.items():
-                            value_preview = str(value)[:100] + "..." if len(str(value)) > 100 else str(value)
+                            value_preview = (
+                                str(value)[:100] + "..."
+                                if len(str(value)) > 100
+                                else str(value)
+                            )
                             print(f"     {key}: {value_preview}")
 
             # Append assistant message
@@ -167,11 +175,9 @@ class NewsExplorerAgent(BaseAgent):
                     preview = result[:200] + "..." if len(result) > 200 else result
                     print(f"  {preview}")
 
-                results.append({
-                    "type": "tool_result",
-                    "tool_use_id": tc.id,
-                    "content": result
-                })
+                results.append(
+                    {"type": "tool_result", "tool_use_id": tc.id, "content": result}
+                )
 
             # Append tool results
             messages.append({"role": "user", "content": results})

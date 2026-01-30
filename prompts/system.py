@@ -1,5 +1,7 @@
 """Main agent system prompt."""
+
 from datetime import datetime
+
 from .templates import CHINESE_OUTPUT_TEMPLATE
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
@@ -50,10 +52,9 @@ When analyzing a story, follow this workflow to support incremental updates:
 **Before analyzing any story:**
 1. Use `search_report_by_id(story_id=X)` to check if a report already exists
 2. If a report exists:
-   - Use `get_hn_item(item_id=X)` to get the current `descendants` count (total comments)
    - Read the existing report with `read_report(story_id=X, metadata_only=true)` to see previous analysis
    - Compare the comment count - if it has increased significantly:
-     * Fetch only the new comments using `get_hn_comments`
+     * Use `read_webpage` to get the total comments
      * Analyze only the new discussion
      * Use `append_report(story_id=X, content="...")` to add your update with a header like "## Update [{TODAY}]"
    - If comments haven't changed much:

@@ -11,7 +11,6 @@ AGENT_TYPES = {
         "tools": [
             AppendReportTool.get_name(),
             CreateReportTool.get_name(),
-            GetHNItemTool.get_name(),
             ReadReportTool.get_name(),
             ReadWebpageTool.get_name(),
             ListReportsTool.get_name(),
