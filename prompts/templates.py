@@ -5,6 +5,7 @@ CHINESE_OUTPUT_TEMPLATE = """# {TODAY}: [故事標題]
 
 **來源：** Hacker News
 **故事 ID：** {{id}}
+**Hacker News 連結：** https://news.ycombinator.com/item?id={{id}}
 **網址：** {{url}}
 **分數：** {{score}} | **評論數：** {{count}}
 
