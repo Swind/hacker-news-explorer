@@ -80,6 +80,94 @@
 
 這個專案的核心設計模式是：**將所有能力抽象為 Tools**。
 
+### Tool Schema 格式
+
+每個 Tool 都需要提供一個 JSON Schema，告訴 LLM：
+- 這個工具叫什麼名字
+- 它做什麼事情
+- 需要什麼參數
+- 參數的類型和限制
+
+```python
+{
+    "name": "get_hn_stories",                    # 工具名稱
+    "description": "Fetch Hacker News stories...", # 工具描述
+    "input_schema": {                            # 參數定義（JSON Schema 格式）
+        "type": "object",
+        "properties": {
+            "story_type": {
+                "type": "string",
+                "enum": ["top", "new", "best", "ask", "show", "job"]
+            },
+            "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30
+            }
+        },
+        "required": ["story_type"]               # 必填參數
+    }
+}
+```
+
+### LLM 如何呼叫 Tool
+
+當 LLM 決定要使用某個工具時，它會回傳一個 `tool_use` block：
+
+```javascript
+// LLM 回傳的 Content Block
+{
+    "type": "tool_use",
+    "id": "toolu_01A1B2C3D4E5F6G7H8I9J0K1",     // 工具呼叫的唯一 ID
+    "name": "get_hn_stories",                    // 要呼叫的工具名稱
+    "input": {                                   // 工具參數
+        "story_type": "top",
+        "limit": 10
+    }
+}
+```
+
+**程式接收到 tool_use 後的處理流程**：
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  1. 解析 tool_use block                                         │
+│     - 提取 name: "get_hn_stories"                               │
+│     - 提取 input: {story_type: "top", limit: 10}                │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  2. 查找並執行對應的 Tool                                       │
+│     - 根據 name 找到 GetHNStoriesTool                           │
+│     - 呼叫 tool._execute(**input)                               │
+│     - 傳入 context (workdir, hn_adapter, etc.)                  │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  3. 取得執行結果                                                 │
+│     # Tool 返回字串結果                                          │
+│     "[42071655] Show HN: I made a map of... | score: 156 | ..." │
+│     "[42071654] The Web Graph ... | score: 89 | ..."            │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  4. 封裝成 tool_result message                                  │
+│     {                                                           │
+│       "type": "tool_result",                                    │
+│       "tool_use_id": "toolu_01A1B2C3...",  # 對應原始呼叫       │
+│       "content": "[42071655] Show HN:..."                      │
+│     }                                                           │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  5. 加入對話歷史，傳給 LLM                                       │
+│     messages.append({                                           │
+│         "role": "user",                                         │
+│         "content": [tool_result]                                │
+│     })                                                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ### BaseTool 抽象類
 
 ```python
@@ -98,6 +186,107 @@ class BaseTool(ABC):
 
     @abstractmethod
     def _execute(self, **kwargs) -> str:    # 實際實作
+```
+
+### 實際範例：get_hn_stories
+
+**Schema（傳給 LLM）**：
+```python
+{
+    "name": "get_hn_stories",
+    "description": "Fetch Hacker News stories. Returns list with id, title, url, score, author, time, comment count.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "story_type": {
+                "type": "string",
+                "enum": ["top", "new", "best", "ask", "show", "job"]
+            },
+            "limit": {"type": "integer", "minimum": 1, "maximum": 30}
+        },
+        "required": ["story_type"]
+    }
+}
+```
+
+**LLM 呼叫時回傳**：
+```json
+{
+    "type": "tool_use",
+    "id": "toolu_012345",
+    "name": "get_hn_stories",
+    "input": {"story_type": "top", "limit": 5}
+}
+```
+
+**Tool 執行後返回**：
+```
+[42071655] Show HN: I made a map of every indie hacker... (https://indiemap.tech) | score: 156 | comments: 42 | by: pj_vlieg
+[42071654] The Web Graph (https://www.thewebgraph.de) | score: 89 | comments: 12 | by: _hosam
+[42071653] Show HN: State of Developer Adoption 2025 (https://github.com/...) | score: 76 | comments: 28 | by: dww
+```
+
+這個字串結果會被包成 `tool_result` 傳回給 LLM，LLM 看到結果後決定下一步做什麼。
+
+### 實際範例：create_report
+
+**Schema（傳給 LLM）**：
+```python
+{
+    "name": "create_report",
+    "description": "Create a new story analysis report with frontmatter metadata.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "story_id": {"type": "integer", "description": "Hacker News story ID"},
+            "hn_url": {"type": "string", "description": "URL to the HN story"},
+            "title": {"type": "string", "description": "Story title"},
+            "verdict": {
+                "type": "string",
+                "enum": ["interesting", "not_interesting", "controversial", "technical"],
+                "description": "Analysis verdict"
+            },
+            "content": {"type": "string", "description": "Markdown content of the analysis"}
+        },
+        "required": ["story_id", "hn_url", "title", "verdict", "content"]
+    }
+}
+```
+
+**LLM 呼叫時回傳**：
+```json
+{
+    "type": "tool_use",
+    "id": "toolu_012346",
+    "name": "create_report",
+    "input": {
+        "story_id": 42071655,
+        "hn_url": "https://news.ycombinator.com/item?id=42071655",
+        "title": "Show HN: I made a map of every indie hacker",
+        "verdict": "interesting",
+        "content": "## 分析\n\n這是一個收集獨立開發者地圖的專案..."
+    }
+}
+```
+
+**Tool 執行後返回**：
+```
+Created report at report/2025-01-30/Show_HN_I_made_a_map_of_every_indie_hacker.md
+```
+
+同時在檔案系統建立：
+```markdown
+---
+story_id: 42071655
+hn_url: https://news.ycombinator.com/item?id=42071655
+title: "Show HN: I made a map of every indie hacker"
+verdict: interesting
+created_at: 2025-01-30T14:23:45
+---
+
+## 分析
+
+這是一個收集獨立開發者地圖的專案...
 ```
 
 ### Tool 註冊與發現
@@ -145,6 +334,27 @@ context = {
 # → 用指定的 agent_type 和 prompt
 # → SubAgent 獨立運作（有自己的對話循環）
 # → 完成後回傳結果給 Main Agent
+```
+
+**Task 的 Schema**：
+```python
+{
+    "name": "Task",
+    "description": "Spawn a subagent for focused analysis...",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "description": {"type": "string", "description": "Short task description (3-5 words)"},
+            "prompt": {"type": "string", "description": "Detailed instructions for the subagent"},
+            "agent_type": {
+                "type": "string",
+                "enum": ["analyze_story", ...],
+                "description": "Type of subagent to spawn"
+            }
+        },
+        "required": ["description", "prompt", "agent_type"]
+    }
+}
 ```
 
 這實現了**任務委派模式**——Main Agent 專注協調，SubAgent 專注執行。
