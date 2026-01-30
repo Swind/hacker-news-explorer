@@ -1,25 +1,27 @@
 # tools/__init__.py
 """Tool collection and registration."""
 from .base import BaseTool
-from .file_read import ReadFileTool
-from .file_write import WriteFileTool
 from .webpage import ReadWebpageTool
 from .hn_stories import GetHNStoriesTool
 from .hn_item import GetHNItemTool
 from .hn_comments import GetHNCommentsTool
 from .finish import FinishExplorationTool
 from .task import TaskTool
+from .report import (CreateReportTool, ReadReportTool, ListReportsTool,
+                     SearchReportByIdTool)
 
 # All tool classes
 ALL_TOOL_CLASSES = [
-    ReadFileTool,
-    WriteFileTool,
     ReadWebpageTool,
     GetHNStoriesTool,
     GetHNItemTool,
     GetHNCommentsTool,
     FinishExplorationTool,
     TaskTool,
+    CreateReportTool,
+    ReadReportTool,
+    ListReportsTool,
+    SearchReportByIdTool,
 ]
 
 def get_tool_schemas() -> list:

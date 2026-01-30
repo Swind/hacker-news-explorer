@@ -10,36 +10,6 @@ from agents.config import AGENT_TYPES
 
 BASE_TOOLS = [
     {
-        "name": "read_file",
-        "description": "Read file contents from the workspace.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "File path relative to workspace",
-                },
-                "limit": {"type": "integer", "description": "Max lines to read"},
-            },
-            "required": ["path"],
-        },
-    },
-    {
-        "name": "write_file",
-        "description": "Write content to a file. Creates directories if needed.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "File path relative to workspace",
-                },
-                "content": {"type": "string", "description": "Content to write"},
-            },
-            "required": ["path", "content"],
-        },
-    },
-    {
         "name": "read_webpage",
         "description": "Read the full content of a webpage. Returns main article text.",
         "input_schema": {
@@ -62,6 +32,95 @@ BASE_TOOLS = [
                 },
             },
             "required": ["summary"],
+        },
+    },
+]
+
+
+# =============================================================================
+# Report Tools
+# =============================================================================
+
+REPORT_TOOLS = [
+    {
+        "name": "create_report",
+        "description": "Create a new story analysis report with frontmatter metadata.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "story_id": {
+                    "type": "integer",
+                    "description": "Hacker News story ID",
+                },
+                "hn_url": {
+                    "type": "string",
+                    "description": "URL to the HN story",
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Story title",
+                },
+                "verdict": {
+                    "type": "string",
+                    "enum": ["interesting", "not_interesting", "controversial", "technical"],
+                    "description": "Analysis verdict",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "Markdown content of the analysis",
+                },
+            },
+            "required": ["story_id", "hn_url", "title", "verdict", "content"],
+        },
+    },
+    {
+        "name": "read_report",
+        "description": "Read a story analysis report by story_id. Returns metadata and content.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "story_id": {
+                    "type": "integer",
+                    "description": "Hacker News story ID",
+                },
+                "metadata_only": {
+                    "type": "boolean",
+                    "description": "If true, only return frontmatter metadata",
+                },
+            },
+            "required": ["story_id"],
+        },
+    },
+    {
+        "name": "list_reports",
+        "description": "List all reports with optional filters by verdict or date.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "verdict": {
+                    "type": "string",
+                    "enum": ["interesting", "not_interesting", "controversial", "technical"],
+                    "description": "Filter by verdict",
+                },
+                "date": {
+                    "type": "string",
+                    "description": "Filter by date (YYYY-MM-DD format)",
+                },
+            },
+        },
+    },
+    {
+        "name": "search_report_by_id",
+        "description": "Check if a report exists for a given story_id. Returns the file path if found.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "story_id": {
+                    "type": "integer",
+                    "description": "Hacker News story ID",
+                },
+            },
+            "required": ["story_id"],
         },
     },
 ]
@@ -155,4 +214,4 @@ HN_TOOLS = [
 # All Tools Combined
 # =============================================================================
 
-ALL_TOOLS = BASE_TOOLS + [TASK_TOOL] + HN_TOOLS
+ALL_TOOLS = BASE_TOOLS + REPORT_TOOLS + [TASK_TOOL] + HN_TOOLS
