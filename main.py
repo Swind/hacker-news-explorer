@@ -5,19 +5,9 @@ News Explorer Agent - Browse Hacker News intelligently with Claude.
 Modular architecture with tools/, agents/, and prompts/ packages.
 """
 from anthropic import Anthropic
-from dotenv import load_dotenv
 
-from config import (
-    ANTHROPIC_API_KEY,
-    ANTHROPIC_BASE_URL,
-    DEBUG,
-    MODEL,
-    MAX_TOOL_CALLS,
-    WORKDIR,
-)
 from agents.main import NewsExplorerAgent
-
-load_dotenv()
+from config import ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL
 
 
 def main():
