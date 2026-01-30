@@ -13,8 +13,8 @@ ANTHROPIC_BASE_URL = os.getenv("ANTHROPIC_BASE_URL")
 MODEL = os.getenv("MODEL_ID", "claude-sonnet-4-5-20250929")
 
 # Agent Configuration
-MAX_TOOL_CALLS = 30
-MAX_TOKENS = 4096
+MAX_TOOL_CALLS = 60
+MAX_TOKENS = 8192
 WORKDIR = Path.cwd()
 
 # Debug

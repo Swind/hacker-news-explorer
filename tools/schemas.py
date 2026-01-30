@@ -123,6 +123,24 @@ REPORT_TOOLS = [
             "required": ["story_id"],
         },
     },
+    {
+        "name": "append_report",
+        "description": "Append markdown content to an existing report. Updates the updated_at timestamp in frontmatter.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "story_id": {
+                    "type": "integer",
+                    "description": "Hacker News story ID",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "Markdown content to append to the report",
+                },
+            },
+            "required": ["story_id", "content"],
+        },
+    },
 ]
 
 

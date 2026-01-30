@@ -8,7 +8,7 @@ from .hn_comments import GetHNCommentsTool
 from .finish import FinishExplorationTool
 from .task import TaskTool
 from .report import (CreateReportTool, ReadReportTool, ListReportsTool,
-                     SearchReportByIdTool)
+                     SearchReportByIdTool, AppendReportTool)
 
 # All tool classes
 ALL_TOOL_CLASSES = [
@@ -22,6 +22,7 @@ ALL_TOOL_CLASSES = [
     ReadReportTool,
     ListReportsTool,
     SearchReportByIdTool,
+    AppendReportTool,
 ]
 
 def get_tool_schemas() -> list:

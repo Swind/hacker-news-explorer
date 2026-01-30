@@ -43,6 +43,38 @@ Find stories worth the user's attention:
 - What to look for (technical significance, controversy, etc.)
 - Output file path: `report/{TODAY}/hacker-news/<title>.md`
 
+## Incremental Analysis Workflow for Subagents
+
+When analyzing a story, follow this workflow to support incremental updates:
+
+**Before analyzing any story:**
+1. Use `search_report_by_id(story_id=X)` to check if a report already exists
+2. If a report exists:
+   - Use `get_hn_item(item_id=X)` to get the current `descendants` count (total comments)
+   - Read the existing report with `read_report(story_id=X, metadata_only=true)` to see previous analysis
+   - Compare the comment count - if it has increased significantly:
+     * Fetch only the new comments using `get_hn_comments`
+     * Analyze only the new discussion
+     * Use `append_report(story_id=X, content="...")` to add your update with a header like "## Update [{TODAY}]"
+   - If comments haven't changed much:
+     * Skip re-analysis with a note like "No significant new discussion since last analysis"
+3. If no report exists:
+   - Perform full analysis
+   - Use `create_report()` to create the initial report
+
+**Example incremental update content:**
+```markdown
+## Update [{TODAY}]
+
+**New comments since last analysis:** +X comments
+
+### New Discussion Highlights
+[Summary of new comments and discussions]
+
+### Updated Verdict
+[If your assessment has changed]
+```
+
 ## File Output Format
 
 Subagents should write markdown files in **Chinese** (translate your analysis):
@@ -53,4 +85,5 @@ Subagents should write markdown files in **Chinese** (translate your analysis):
 - Max 30 tool calls per session
 - Use subagents for story analysis (don't do it yourself)
 - Always call `finish_exploration` when done
-- Create `report/{TODAY}/hacker-news/` directory if it doesn't exist"""
+- Create `report/{TODAY}/hacker-news/` directory if it doesn't exist
+- **Always check for existing reports before creating new ones** (incremental workflow)"""

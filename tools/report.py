@@ -316,3 +316,118 @@ class SearchReportByIdTool(BaseTool):
                 continue
 
         return f"No report found for story_id {story_id}"
+
+
+class AppendReportTool(BaseTool):
+    """Tool for appending content to an existing story analysis report."""
+
+    @classmethod
+    def get_name(cls) -> str:
+        return "append_report"
+
+    @classmethod
+    def get_schema(cls) -> dict:
+        return {
+            "name": "append_report",
+            "description": "Append markdown content to an existing report. Updates the updated_at timestamp in frontmatter.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "story_id": {
+                        "type": "integer",
+                        "description": "Hacker News story ID"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Markdown content to append to the report"
+                    }
+                },
+                "required": ["story_id", "content"]
+            }
+        }
+
+    def _execute(self, story_id: int, content: str) -> str:
+        """Append content to an existing report."""
+        workdir = self.context.get("workdir", Path.cwd())
+        report_dir = workdir / "report"
+
+        if not report_dir.exists():
+            return f"Error: Report directory not found"
+
+        # Search for the report file
+        report_file = None
+        for md_file in report_dir.rglob("*.md"):
+            try:
+                file_content = md_file.read_text()
+                metadata = parse_frontmatter(file_content)
+                if metadata.get("story_id") == str(story_id):
+                    report_file = md_file
+                    break
+            except Exception:
+                continue
+
+        if not report_file:
+            return f"Error: No report found for story_id {story_id}. Use create_report for new reports."
+
+        try:
+            # Read existing content
+            existing_content = report_file.read_text()
+            lines = existing_content.split('\n')
+
+            # Find the end of frontmatter (second ---)
+            frontmatter_end = 0
+            dash_count = 0
+            for i, line in enumerate(lines):
+                if line.strip() == '---':
+                    dash_count += 1
+                    if dash_count == 2:
+                        frontmatter_end = i
+                        break
+
+            # Extract frontmatter lines
+            frontmatter_lines = lines[:frontmatter_end + 1]
+            content_lines = lines[frontmatter_end + 1:]
+
+            # Update or add updated_at timestamp
+            updated_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            updated_at_added = False
+            new_frontmatter_lines = []
+
+            for line in frontmatter_lines:
+                if line.startswith('updated_at:'):
+                    new_frontmatter_lines.append(f'updated_at: {updated_at}')
+                    updated_at_added = True
+                elif line.strip() == '---' and not updated_at_added and len(new_frontmatter_lines) > 1:
+                    # Add updated_at before the closing ---
+                    new_frontmatter_lines.append(f'updated_at: {updated_at}')
+                    new_frontmatter_lines.append(line)
+                    updated_at_added = True
+                else:
+                    new_frontmatter_lines.append(line)
+
+            # If updated_at still wasn't added (edge case), add it before the last ---
+            if not updated_at_added:
+                final_lines = []
+                for i, line in enumerate(new_frontmatter_lines):
+                    if line.strip() == '---' and i > 0:
+                        final_lines.append(f'updated_at: {updated_at}')
+                    final_lines.append(line)
+                new_frontmatter_lines = final_lines
+
+            # Combine: frontmatter + original content + new content
+            new_content = '\n'.join(new_frontmatter_lines) + '\n\n'
+            if content_lines:
+                # Keep original content
+                new_content += '\n'.join(content_lines).rstrip()
+                if content_lines and not content_lines[-1].strip() == '':
+                    new_content += '\n'
+            # Append new content
+            new_content += '\n' + content
+
+            # Write back to file
+            report_file.write_text(new_content)
+            relative_path = report_file.relative_to(workdir)
+            return f"Appended to report at {relative_path} (updated_at: {updated_at})"
+
+        except Exception as e:
+            return f"Error appending to report: {e}"
