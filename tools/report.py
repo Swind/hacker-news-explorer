@@ -84,6 +84,19 @@ class CreateReportTool(BaseTool):
         workdir = self.context.get("workdir", Path.cwd())
         report_dir = workdir / "report"
 
+        # Check if a report with this story_id already exists (across all dates)
+        if report_dir.exists():
+            for md_file in report_dir.rglob("*.md"):
+                try:
+                    existing_content = md_file.read_text()
+                    metadata = parse_frontmatter(existing_content)
+                    if metadata.get("story_id") == str(story_id):
+                        relative_path = md_file.relative_to(workdir)
+                        return (f"Error: Report for story_id {story_id} already exists at {relative_path}. "
+                                f"Use append_report to add updates instead.")
+                except Exception:
+                    continue
+
         # Create date-based subdirectory
         date_str = datetime.now().strftime("%Y-%m-%d")
         date_dir = report_dir / date_str
@@ -93,9 +106,9 @@ class CreateReportTool(BaseTool):
         filename = sanitize_filename(title)
         file_path = date_dir / f"{filename}.md"
 
-        # Check if file already exists
+        # Double-check (shouldn't happen given above check, but safety first)
         if file_path.exists():
-            return f"Error: Report already exists at {file_path.relative_to(workdir)}"
+            return f"Error: Report file already exists at {file_path.relative_to(workdir)}"
 
         # Create frontmatter
         created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")

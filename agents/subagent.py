@@ -4,7 +4,7 @@ from config import DEBUG, MAX_TOKENS, MODEL
 from prompts.subagent import get_subagent_prompt
 from tools import get_tool_class
 
-from .base import BaseAgent
+from .base import BaseAgent, retry_api_call
 
 
 class SubAgent(BaseAgent):
@@ -74,7 +74,8 @@ class SubAgent(BaseAgent):
                     else:
                         print(f"    ▪️ ({role}) {content}")
 
-            response = self.client.messages.create(
+            response = retry_api_call(
+                self.client.messages.create,
                 model=MODEL,
                 system=self.get_system_prompt(),
                 messages=messages,

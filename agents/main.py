@@ -6,7 +6,7 @@ from config import DEBUG, MAX_TOKENS, MAX_TOOL_CALLS, MODEL, WORKDIR
 from prompts.system import SYSTEM_PROMPT
 from tools import get_tool_class, get_tool_schemas
 
-from .base import BaseAgent
+from .base import BaseAgent, retry_api_call
 from .config import AGENT_TYPES
 
 
@@ -115,7 +115,8 @@ class NewsExplorerAgent(BaseAgent):
                     else:
                         print(f"    ▪️ ({role}) {content}")
 
-            response = self.client.messages.create(
+            response = retry_api_call(
+                self.client.messages.create,
                 model=MODEL,
                 system=self.get_system_prompt(),
                 messages=messages,
