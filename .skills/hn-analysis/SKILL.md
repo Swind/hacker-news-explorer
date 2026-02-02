@@ -1,131 +1,131 @@
 ---
 name: hn-analysis
-description: HN 文章分析技巧。使用時機：評估故事有趣程度、判斷技術價值、識別爭議性話題時。
+description: Hacker News story analysis techniques. Use when evaluating story interest level, assessing technical value, or identifying controversial topics.
 ---
 
-# Hacker News 文章分析指南
+# Hacker News Story Analysis Guide
 
-## 使用時機
-- 評估故事是否值得深入分析時
-- 判斷文章的技術價值時
-- 識別爭議性話題時
-- 決定 verdict 分類時
+## When to Use
+- Evaluating whether a story is worth deep analysis
+- Assessing the technical value of an article
+- Identifying controversial topics
+- Deciding on verdict classification
 
-## 評估維度
+## Evaluation Dimensions
 
-### 1. 技術重要性 (Technical Significance)
+### 1. Technical Significance
 
-**高技術價值指標：**
-- 主要技術發布（新語言、框架、重大版本更新）
-- 安全漏洞或修復（尤其是廣泛使用的軟體）
-- 新的開發方法論或最佳實踐
-- 深度技術文章（非科普性質）
-- 開源工具/專案發布
+**High technical value indicators:**
+- Major tech releases (new languages, frameworks, major version updates)
+- Security vulnerabilities or fixes (especially for widely-used software)
+- New development methodologies or best practices
+- Deep technical articles (not pop-science)
+- Open source tool/project releases
 
-**技術價值評分：**
-- ⭐⭐⭐⭐⭐ 重大影響（如：新 CPU 架構、主要語言發布）
-- ⭐⭐⭐⭐ 重要影響（如：實用工具、安全修復）
-- ⭐⭐⭐ 有一定價值（如：技術分享、經驗談）
-- ⭐⭐ 較低價值（如：科普介紹）
-- ⭐ 技術含量低
+**Technical value scoring:**
+- ⭐⭐⭐⭐⭐ Major impact (e.g., new CPU architecture, major language release)
+- ⭐⭐⭐⭐ Important impact (e.g., useful tool, security fix)
+- ⭐⭐⭐ Some value (e.g., technical sharing, experience post)
+- ⭐⭐ Lower value (e.g., intro/overview content)
+- ⭐ Low technical content
 
-### 2. 討論熱度 (Engagement)
+### 2. Engagement Level
 
-**評估指標：**
-| 分數 | 評論數 | 判斷 |
-|------|--------|------|
-| 極高 | > 200 | 社群高度關注 |
-| 高 | 100-200 | 值得關注 |
-| 中 | 50-100 | 有一定討論 |
-| 低 | < 50 | 討論較少 |
+**Evaluation metrics:**
+| Score | Comment Count | Assessment |
+|-------|---------------|------------|
+| Very High | > 200 | High community interest |
+| High | 100-200 | Worth attention |
+| Medium | 50-100 | Some discussion |
+| Low | < 50 | Less discussion |
 
-**注意：**
-- 新文章評論數較少是正常的
-- 結合分數（points）一起評估
-- 評論質量比數量更重要
+**Note:**
+- New articles naturally have fewer comments
+- Consider score (points) alongside comment count
+- Comment quality matters more than quantity
 
-### 3. 爭議性 (Controversy)
+### 3. Controversy
 
-**爭議性指標：**
-- 評論中有明顯對立觀點
-- 討論涉及敏感話題（政治、社會議題）
-- 技術決策引發分歧
-- 公司/產品批評
+**Controversy indicators:**
+- Polarized opinions in comments
+- Discussion touches sensitive topics (politics, social issues)
+- Disagreement on technical decisions
+- Company/product criticism
 
-**爭議性等級：**
-- **高爭議**：評論兩極分化、激烈辯論
-- **中爭議**：有不同意見但理性討論
-- **低爭議**：共識較多
+**Controversy levels:**
+- **High controversy**: Polarized comments, heated debate
+- **Medium controversy**: Differing views but rational discussion
+- **Low controversy**: More consensus
 
-### 4. 新穎性 (Novelty)
+### 4. Novelty
 
-**新穎性判斷：**
-- 全新的概念或技術？
-- 獨特的視角或見解？
-- 不同於常見的討論？
-- 打破常規的想法？
+**Novelty assessment:**
+- Is this a completely new concept or technology?
+- Unique perspective or insight?
+- Different from common discussions?
+- Challenges conventional thinking?
 
-## Verdict 決策樹
+## Verdict Decision Tree
 
 ```
-開始
+Start
   │
-  ├─ 技術重要性 ⭐⭐⭐⭐ 或 ⭐⭐⭐⭐⭐？
+  ├─ Technical significance ⭐⭐⭐⭐ or ⭐⭐⭐⭐⭐?
   │   └─ YES → technical
   │
-  ├─ 爭議性 高 或 中？
+  ├─ Controversy High or Medium?
   │   └─ YES → controversial
   │
-  ├─ 討論熱度 高 或 極高？
+  ├─ Engagement High or Very High?
   │   └─ YES → interesting
   │
-  ├─ 新穎性 高？
+  ├─ Novelty High?
   │   └─ YES → interesting
   │
-  └─ 其他 → not_interesting
+  └─ Other → not_interesting
 ```
 
-## 分析流程
+## Analysis Process
 
-### 第一步：快速掃描
-- 標題：話題是什麼？
-- 分數：有多少人關注？
-- 評論數：討論程度如何？
+### Step 1: Quick Scan
+- Title: What's the topic?
+- Score: How many people engaged?
+- Comment count: Discussion level?
 
-### 第二步：深入閱讀
-- 文章內容：技術深度如何？
-- 評論樣本：社群反應如何？
-- 來源：是否可信？
+### Step 2: Deep Dive
+- Article content: Technical depth?
+- Comment sample: Community reaction?
+- Source: Credible?
 
-### 第三步：綜合評估
-- 結合各個維度
-- 考慮目標受眾
-- 決定 verdict
+### Step 3: Synthesis
+- Combine all dimensions
+- Consider target audience
+- Decide verdict
 
-## 特殊情況處理
+## Special Cases
 
-### Show HN 文章
-- 優先支持獨立開發者
-- 評估專案的實用性
-- 考慮創新性
+### Show HN Posts
+- Prioritize independent developers
+- Assess project utility
+- Consider innovation
 
-### 爭議性話題
-- 保持中立
-- 報導雙方觀點
-- 避免站隊
+### Controversial Topics
+- Stay neutral
+- Report both perspectives
+- Avoid taking sides
 
-### 重複話題
-- HN 常見的循環話題
-- 評估是否有新角度
-- 避免過度報導
+### Recurring Topics
+- Common HN cycles
+- Assess if there's a new angle
+- Avoid overcoverage
 
-## 常見誤區
+## Common Pitfalls
 
-❌ **只看分數**：高分不代表高價值
-❌ **忽視評論質量**：噁心評論多的文章不一定值得分析
-❌ **個人偏好**：不要因為喜歡/不喜歡而影響判斷
-❌ **趕熱潮**：不是所有熱門話題都值得深入
+❌ **Only looking at score**: High score ≠ high value
+❌ **Ignoring comment quality**: Toxic comments don't make it worth analyzing
+❌ **Personal bias**: Don't let personal likes/dislikes affect judgment
+❌ **Chasing trends**: Not all hot topics deserve deep analysis
 
-✅ **綜合評估**：考慮多個維度
-✅ **客觀中立**：基於事實判斷
-✅ **關注長期價值**：這個內容一週後還有價值嗎？
+✅ **Holistic assessment**: Consider multiple dimensions
+✅ **Objective neutrality**: Base judgments on facts
+✅ **Long-term value**: Will this content still be valuable a week from now?

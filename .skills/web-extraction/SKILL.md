@@ -1,210 +1,210 @@
 ---
 name: web-extraction
-description: 網頁內容提取技巧。使用時機：閱讀文章網頁、提取關鍵資訊、處理特殊網站格式時。
+description: Web content extraction techniques. Use when reading article pages, extracting key information, or handling special website formats.
 ---
 
-# 網頁內容提取指南
+# Web Content Extraction Guide
 
-## 使用時機
-- 需要閱讀文章全文時
-- 提取關鍵資訊時
-- 處理特殊網站格式時
-- 網頁內容過長需要聚焦時
+## When to Use
+- Need to read full article content
+- Extracting key information
+- Handling special website formats
+- Webpage content is too long and needs focus
 
-## 使用 read_webpage 工具
+## Using the read_webpage Tool
 
 ```python
 read_webpage(url="https://example.com/article")
 ```
 
-**注意：** 工具會自動提取主要內容，去除廣告和導航元素。
+**Note:** The tool automatically extracts main content, removing ads and navigation elements.
 
-## 不同類型網站的處理
+## Handling Different Website Types
 
-### 1. 技術博客/文章
+### 1. Tech Blogs/Articles
 
-**特徵：**
-- 標題清晰
-- 有發布日期
-- 代碼範例
-- 結構化內容
+**Characteristics:**
+- Clear titles
+- Publication dates
+- Code examples
+- Structured content
 
-**提取重點：**
-- 標題和副標題
-- 核心論點
-- 代碼範例
-- 結論
+**Extract:**
+- Title and subtitles
+- Core arguments
+- Code examples
+- Conclusions
 
-**常見格式：**
-- Medium、Dev.to、個人博客
-- 公司技術博客
+**Common formats:**
+- Medium, Dev.to, personal blogs
+- Company tech blogs
 
-### 2. 新聞網站
+### 2. News Sites
 
-**特徵：**
-- 倒金字塔結構
-- 標題、導言、正文
-- 可能付費牆
+**Characteristics:**
+- Inverted pyramid structure
+- Headline, lead, body
+- Possible paywall
 
-**提取重點：**
-- 標題（<h1>）
-- 導語段落
-- 關鍵事實
-- 引述
+**Extract:**
+- Headline (<h1>)
+- Lead paragraph
+- Key facts
+- Quotes
 
-### 3. PDF 文檔
+### 3. PDF Documents
 
-**使用 read_webpage 時：**
-- 工具會自動處理 PDF
-- 可能不完整，需要關注：
-  - 標題頁資訊
-  - 目錄（了解結構）
-  - 摘要/結論
+**When using read_webpage:**
+- Tool handles PDF automatically
+- May be incomplete, focus on:
+  - Title page info
+  - Table of contents (understand structure)
+  - Abstract/Conclusion
 
 ### 4. GitHub README
 
-**特徵：**
-- Markdown 格式
-- 包含代碼示例
-- 有徽章（badges）
+**Characteristics:**
+- Markdown format
+- Contains code examples
+- Has badges
 
-**提取重點：**
-- 專案描述
-- 安裝說明
-- 使用範例
-- 主要功能列表
+**Extract:**
+- Project description
+- Installation instructions
+- Usage examples
+- Key features list
 
-### 5. 視頻/音頻內容
+### 5. Video/Audio Content
 
-**無法直接提取，策略：**
-- 讀取描述/說明文字
-- 查看評論摘要
-- 檢查是否有文字稿（transcript）
+**Cannot extract directly, strategies:**
+- Read description/transcript text
+- Check comment summaries
+- Look for transcripts
 
-## 內容提取策略
+## Content Extraction Strategies
 
-### 當內容過長時
+### When Content is Too Long
 
-**策略 1：分段讀取**
+**Strategy 1: Segment Reading**
 ```
-先讀前 30% → 了解主題
-再讀中間 40% → 獲取核心論證
-最後讀後 30% → 查看結論
+Read first 30% → Understand topic
+Read middle 40% → Get core arguments
+Read last 30% → Check conclusion
 ```
 
-**策略 2：關注結構**
-- 標題層級（h1, h2, h3）
-- 列表項目
-- 加粗/斜體文字
-- 引用區塊
+**Strategy 2: Focus on Structure**
+- Heading levels (h1, h2, h3)
+- List items
+- Bold/italic text
+- Quote blocks
 
-**策略 3：關鍵詞搜尋**
+**Strategy 3: Keyword Search**
 ```
-在內容中搜尋：
+Search within content for:
 - "conclusion", "summary", "takeaway"
 - "however", "therefore", "importantly"
-- 標題中的關鍵詞
+- Keywords from title
 ```
 
-### 當內容難以理解時
+### When Content is Difficult to Understand
 
-**檢查：**
-1. 是否為技術論文？→ 關注摘要和結論
-2. 是否為系列文章？→ 尋找第一篇
-3. 是否需要背景知識？→ 查看評論解釋
+**Check:**
+1. Is it a technical paper? → Focus on abstract and conclusion
+2. Is it a series? → Look for the first part
+3. Does it need background? → Check comments for explanations
 
-### 當網頁載入失敗時
+### When Webpage Fails to Load
 
-**可能原因：**
-- 需要登入
-- 有防爬蟲機制
-- 伺服器問題
-- URL 錯誤
+**Possible reasons:**
+- Requires login
+- Has anti-scraping measures
+- Server issues
+- Incorrect URL
 
-**應對策略：**
-- 檢查 HN 評論中是否有摘要
-- 尋找其他來源（鏡像、轉載）
-- 跳過該來源，依賴評論討論
+**Strategies:**
+- Check HN comments for summaries
+- Look for alternative sources (mirrors, reposts)
+- Skip the source, rely on comment discussion
 
-## 關鍵資訊識別
+## Key Information Identification
 
-### 技術文章關鍵點
+### Tech Article Key Points
 
-**必須提取：**
-- 核心技術/概念是什麼？
-- 解決了什麼問題？
-- 如何實現的（高層次）？
-- 有什麼限制或缺點？
+**Must extract:**
+- What is the core technology/concept?
+- What problem does it solve?
+- How is it implemented (high-level)?
+- What are the limitations or drawbacks?
 
-**可選提取：**
-- 性能數據
-- 基準測試結果
-- 與替代方案的比較
+**Optional extract:**
+- Performance data
+- Benchmark results
+- Comparisons with alternatives
 
-### 新聞文章關鍵點
+### News Article Key Points
 
-**5W1H：**
-- Who：誰/什麼組織
-- What：發生什麼事
-- When：何時發生
-- Where：何地發生
-- Why：為什麼發生
-- How：如何發生
+**5W1H:**
+- Who: Which organization/person
+- What: What happened
+- When: When did it happen
+- Where: Where did it happen
+- Why: Why did it happen
+- How: How did it happen
 
-### 評論內容處理
+### Comment Content Handling
 
-當使用 `read_webpage` 讀取 HN 評論頁時：
+When using `read_webpage` to read HN comment pages:
 
-**關注高贊評論**
-- 通常代表社群共識
-- 可能有技術細節
-- 可能有不同意見
+**Focus on high-voted comments**
+- Usually represent community consensus
+- May have technical details
+- May have differing opinions
 
-**識別討論主題**
-- 主要論點有哪些？
-- 有爭議嗎？爭論焦點是什麼？
-- 有專業人士參與討論嗎？
+**Identify discussion themes**
+- What are the main arguments?
+- Is there controversy? What's the debate focus?
+- Are experts participating?
 
-**提取有用資訊**
-- 背景補充
-- 相關鏈接
-- 經驗分享
-- 批評意見
+**Extract useful information**
+- Background context
+- Related links
+- Experience sharing
+- Criticisms
 
-## 錯誤處理
+## Error Handling
 
-### 常見錯誤
+### Common Errors
 
 ```
 Error: Unable to fetch webpage
 ```
 
-**應對：**
-1. 確認 URL 正確
-2. 檢查是否需要特殊處理（如 PDF）
-3. 依賴 HN 評論摘要
-4. 記錄在報告中說明無法訪問
+**Response:**
+1. Verify URL is correct
+2. Check if special handling is needed (e.g., PDF)
+3. Rely on HN comment summaries
+4. Note in report that content was inaccessible
 
-### 內容質量評估
+### Content Quality Assessment
 
-**低質量指標：**
-- 內容重複
-- 廣告過多
-- 標題黨
-- 無實質內容
+**Low quality indicators:**
+- Repetitive content
+- Too many ads
+- Clickbait titles
+- No substantive content
 
-**應對：**
-- 在報告中註明
-- 主要依賴評論討論
-- 判斷是否值得分析
+**Response:**
+- Note in report
+- Rely mainly on comment discussion
+- Assess whether worth analyzing
 
-## 最佳實踐
+## Best Practices
 
-✅ **先看結構**：標題、章節、摘要
-✅ **關注重點**：提取核心資訊，非逐字閱讀
-✅ **結合評論**：HN 評論常有補充資訊
-✅ **記錄來源**：註明資訊來源
+✅ **Check structure first**: Titles, sections, abstracts
+✅ **Focus on key points**: Extract core information, don't read word-for-word
+✅ **Combine with comments**: HN comments often have supplementary info
+✅ **Note sources**: Cite where information came from
 
-❌ **不要逐字閱讀**：長文章效率低
-❌ **不要忽視結論**：結論通常最重要
-❌ **不要迷失細節**：聚焦主要論點
+❌ **Don't read word-for-word**: Long articles are inefficient
+❌ **Don't ignore conclusions**: Conclusions are usually most important
+❌ **Don't get lost in details**: Focus on main arguments

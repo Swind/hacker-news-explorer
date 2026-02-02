@@ -1,90 +1,90 @@
 ---
 name: incremental-update
-description: 增量更新流程。使用時機：分析已存在報告的文章時、需要更新舊分析時。
+description: Incremental update workflow for existing reports. Use when analyzing stories that already have reports or need updates.
 ---
 
-# 增量更新工作流程
+# Incremental Update Workflow
 
-## 使用時機
-- 當你發現要分析的文章已經有報告時
-- 需要更新舊的分析時
-- 評論數量顯著增加時
+## When to Use
+- The story you're analyzing already has a report
+- You need to update an existing analysis
+- Comment count has increased significantly
 
-## 工作流程
+## Workflow
 
-### 第一步：檢查是否已有報告
+### Step 1: Check if Report Exists
 
-在開始任何分析之前，必須先檢查：
+Before starting any analysis, you MUST check:
 
 ```python
 search_report_by_id(story_id=XXXXX)
 ```
 
-### 第二步：根據結果決定下一步
+### Step 2: Decide Next Action Based on Result
 
-**情況 A：報告不存在**
-→ 進行完整分析，使用 `create_report()` 創建新報告
+**Case A: Report doesn't exist**
+→ Perform full analysis, use `create_report()` to create new report
 
-**情況 B：報告已存在**
-→ 繼續第三步
+**Case B: Report exists**
+→ Continue to Step 3
 
-### 第三步：讀取舊報告
+### Step 3: Read Existing Report
 
 ```python
 read_report(story_id=XXXXX, metadata_only=true)
 ```
 
-查看舊報告的：
-- 創建時間
-- 評價（verdict）
-- 當時的評論數量
+Check the existing report for:
+- Created date
+- Verdict
+- Comment count at time of analysis
 
-### 第四步：判斷是否需要更新
+### Step 4: Determine if Update is Needed
 
-比較評論數量變化：
+Compare comment count change:
 
-| 評論增長 | 行動 |
-|---------|------|
-| < 10%   | 跳過更新，回覆「無顯著新討論」 |
-| 10-30%  | 可選更新，視內容決定 |
-| > 30%   | **必須更新** |
+| Comment Growth | Action |
+|----------------|--------|
+| < 10% | Skip update, reply "No significant new discussion" |
+| 10-30% | Optional update, decide based on content |
+| > 30% | **Must update** |
 
-### 第五步：更新報告
+### Step 5: Update the Report
 
-使用 `append_report()` 添加新內容：
+Use `append_report()` to add new content:
 
 ```markdown
-## 更新 [YYYY-MM-DD]
+## Update [YYYY-MM-DD]
 
-**新評論數：** +X 條評論（總共 Y 條）
+**New comments:** +X comments (Y total)
 
-### 新討論重點
-[總結新的評論和討論]
+### New Discussion Highlights
+[Summary of new comments and discussions]
 
-### 更新評價（如有變化）
-[如果評價改變，說明原因]
+### Updated Verdict (if changed)
+[Explain why your assessment changed]
 ```
 
-## 重要原則
+## Important Principles
 
-1. **永遠先檢查**：不要假設報告不存在
-2. **避免重複**：不要為同一個故事創建多個報告
-3. **增量而非替換**：使用 `append_report` 而非重新創建
-4. **標註時間**：更新內容必須標註日期
-5. **說明變化**：清楚說明為什麼需要更新
+1. **Always check first**: Never assume a report doesn't exist
+2. **Avoid duplicates**: Don't create multiple reports for the same story
+3. **Append, don't replace**: Use `append_report` rather than recreating
+4. **Timestamp updates**: Update content must be dated
+5. **Explain changes**: Clearly explain why an update is needed
 
-## 錯誤處理
+## Error Handling
 
-如果 `create_report()` 返回「報告已存在」的錯誤：
-→ 使用 `append_report()` 來添加內容
-→ 或使用 `read_report()` 來查看現有內容
+If `create_report()` returns "report already exists" error:
+→ Use `append_report()` to add content
+→ Or use `read_report()` to view existing content
 
-## 範例
+## Example
 
-**場景：分析一篇 3 天前的文章**
+**Scenario: Analyzing a story from 3 days ago**
 
-1. `search_report_by_id(12345)` → 發現報告存在
-2. `read_report(12345, metadata_only=true)` → 舊報告顯示 50 條評論
-3. 檢查 HN → 現在有 80 條評論（+60%）
-4. 讀取新評論，分析新討論
-5. `append_report(12345, "## 更新 [2026-02-02]\n\n**新評論數：** +30 條...")`
+1. `search_report_by_id(12345)` → Report exists
+2. `read_report(12345, metadata_only=true)` → Old report shows 50 comments
+3. Check HN → Now has 80 comments (+60%)
+4. Read new comments, analyze new discussion
+5. `append_report(12345, "## Update [2026-02-02]\n\n**New comments:** +30...")`
