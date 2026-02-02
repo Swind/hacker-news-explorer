@@ -359,6 +359,44 @@ context = {
 
 這實現了**任務委派模式**——Main Agent 專注協調，SubAgent 專注執行。
 
+### 特殊 Tool：Skill
+
+`SkillTool` 讓 LLM 可以**按需載入領域知識**：
+
+```python
+# LLM 呼叫 Skill("chinese-writing")
+#
+# 程式解析後：
+# → 讀取 .skills/chinese-writing/SKILL.md
+# → 將完整內容包在 <skill-loaded> 標籤中
+# → 作為 tool_result 返回給 LLM
+# → LLM 獲得中文寫作知識，後續遵循該風格
+```
+
+**漸進式披露 (Progressive Disclosure)**：
+- **Layer 1**：啟動時只載入 skill 名稱和描述（~100 tokens/skill）
+- **Layer 2**：呼叫 Skill 時才載入完整內容（~2000 tokens）
+- **Cache 保留**：Skill 內容透過 tool_result 注入，不破壞 prompt cache
+
+**SKILL.md 格式**：
+```markdown
+---
+name: chinese-writing
+description: 中文報告寫作。使用時機：寫報告前、格式化輸出時。
+---
+
+# 中文報告寫作指南
+
+## 使用時機
+- 準備撰寫任何報告內容時
+...
+
+## 輸出格式
+...
+```
+
+這實現了**知識外部化**——將領域知識存在檔案中，而非鎖在模型參數裡。
+
 ---
 
 ## Agent/Subagent 層級架構
