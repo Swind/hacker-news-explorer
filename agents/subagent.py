@@ -10,7 +10,7 @@ from .base import BaseAgent, retry_api_call
 class SubAgent(BaseAgent):
     """Subagent with limited tool access."""
 
-    def __init__(self, client, agent_type: str, allowed_tool_names: list, workdir: str):
+    def __init__(self, client, agent_type: str, allowed_tool_names: list, workdir: str, todo_manager=None):
         # Filter tools to only allowed ones
         from tools import get_tool_schemas
 
@@ -21,6 +21,7 @@ class SubAgent(BaseAgent):
         self.agent_type = agent_type
         self.workdir = workdir
         self.allowed_tool_names = allowed_tool_names
+        self.todo_manager = todo_manager  # Shared TodoManager from main agent
 
     def get_system_prompt(self) -> str:
         return get_subagent_prompt(self.agent_type, self.workdir)
@@ -47,11 +48,17 @@ class SubAgent(BaseAgent):
         from adapters.hackernews import HackerNewsAdapter
         from adapters.web_reader import WebReaderAdapter
 
-        return {
+        context = {
             "workdir": Path(self.workdir),
             "hn_adapter": HackerNewsAdapter(),
             "web_reader": WebReaderAdapter(),
         }
+
+        # Add todo_manager if available
+        if self.todo_manager is not None:
+            context["todo_manager"] = self.todo_manager
+
+        return context
 
     def run(self, prompt: str) -> str:
         """Run the subagent with a prompt."""

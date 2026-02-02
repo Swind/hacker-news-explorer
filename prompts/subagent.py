@@ -15,6 +15,9 @@ Today's date: {today}
 **Skills available** (invoke with Skill tool when task matches):
 {SKILLS.get_descriptions()}
 
+**TodoWrite available** (use to update main agent's task list):
+You can update the main agent's todo list to mark your task as completed.
+
 {config.get('description', '')}
 
 Complete the task and return a clear, concise summary."""

@@ -139,3 +139,74 @@ def run_skill(skill_name: str) -> str:
 </skill-loaded>
 
 Follow the instructions in the skill above to complete the user's task."""
+
+
+# =============================================================================
+# TodoManager
+# =============================================================================
+
+
+class TodoManager:
+    """Task list manager with constraints for tracking analysis stories."""
+
+    def __init__(self):
+        self.items = []
+
+    def update(self, items: list) -> str:
+        """Update the todo list with new items.
+
+        Args:
+            items: List of dicts with keys: content, status, activeForm
+
+        Returns:
+            Rendered todo list string
+
+        Raises:
+            ValueError: If validation fails
+        """
+        validated = []
+        in_progress = 0
+
+        for i, item in enumerate(items):
+            content = str(item.get("content", "")).strip()
+            status = str(item.get("status", "pending")).lower()
+            active = str(item.get("activeForm", "")).strip()
+
+            if not content or not active:
+                raise ValueError(f"Item {i}: content and activeForm required")
+            if status not in ("pending", "in_progress", "completed"):
+                raise ValueError(f"Item {i}: invalid status '{status}'")
+            if status == "in_progress":
+                in_progress += 1
+
+            validated.append(
+                {"content": content, "status": status, "activeForm": active}
+            )
+
+        if in_progress > 1:
+            raise ValueError("Only one task can be in_progress at a time")
+
+        self.items = validated[:20]  # Max 20 items
+        return self.render()
+
+    def render(self) -> str:
+        """Render the current todo list as a string."""
+        if not self.items:
+            return "No todos."
+
+        lines = []
+        for t in self.items:
+            mark = (
+                "[x]"
+                if t["status"] == "completed"
+                else "[>]" if t["status"] == "in_progress" else "[ ]"
+            )
+            lines.append(f"{mark} {t['content']}")
+
+        done = sum(1 for t in self.items if t["status"] == "completed")
+        return "\n".join(lines) + f"\n({done}/{len(self.items)} done)"
+
+    def get_items(self) -> list:
+        """Return the current items list."""
+        return self.items.copy()
+

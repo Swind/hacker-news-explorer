@@ -6,7 +6,7 @@ from config import DEBUG, MAX_TOKENS, MAX_TOOL_CALLS, MODEL, WORKDIR
 from prompts.system import SYSTEM_PROMPT
 from tools import get_tool_class, get_tool_schemas
 
-from .base import BaseAgent, retry_api_call
+from .base import BaseAgent, retry_api_call, TodoManager
 from .config import AGENT_TYPES
 
 
@@ -18,6 +18,7 @@ class NewsExplorerAgent(BaseAgent):
         super().__init__(client, tools=all_tools, max_tokens=MAX_TOKENS)
         self.is_finished = False
         self.final_summary = None
+        self.todo_manager = TodoManager()  # Initialize TodoManager
 
     def get_system_prompt(self) -> str:
         return SYSTEM_PROMPT
@@ -71,7 +72,7 @@ class NewsExplorerAgent(BaseAgent):
         else:
             print(f"  [{agent_type}] {description}")
 
-        subagent = SubAgent(self.client, agent_type, allowed_tools, str(WORKDIR))
+        subagent = SubAgent(self.client, agent_type, allowed_tools, str(WORKDIR), self.todo_manager)
         return subagent.run(prompt)
 
     def _get_context(self) -> dict:
@@ -83,6 +84,7 @@ class NewsExplorerAgent(BaseAgent):
             "workdir": WORKDIR,
             "hn_adapter": HackerNewsAdapter(),
             "web_reader": WebReaderAdapter(),
+            "todo_manager": self.todo_manager,
         }
 
     def run(self, user_message: str = None):
