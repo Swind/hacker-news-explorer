@@ -7,6 +7,7 @@ from .hn_item import GetHNItemTool
 from .hn_comments import GetHNCommentsTool
 from .finish import FinishExplorationTool
 from .task import TaskTool
+from .skill import SkillTool
 from .report import (CreateReportTool, ReadReportTool, ListReportsTool,
                      SearchReportByIdTool, AppendReportTool)
 
@@ -18,6 +19,7 @@ ALL_TOOL_CLASSES = [
     GetHNCommentsTool,
     FinishExplorationTool,
     TaskTool,
+    SkillTool,
     CreateReportTool,
     ReadReportTool,
     ListReportsTool,

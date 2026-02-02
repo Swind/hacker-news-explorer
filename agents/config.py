@@ -3,7 +3,8 @@
 
 from tools import (AppendReportTool, CreateReportTool, GetHNCommentsTool,
                    GetHNItemTool, GetHNStoriesTool, ListReportsTool,
-                   ReadReportTool, ReadWebpageTool, SearchReportByIdTool)
+                   ReadReportTool, ReadWebpageTool, SearchReportByIdTool,
+                   SkillTool)
 
 AGENT_TYPES = {
     "analyze_story": {
@@ -15,6 +16,7 @@ AGENT_TYPES = {
             ReadWebpageTool.get_name(),
             ListReportsTool.get_name(),
             SearchReportByIdTool.get_name(),
+            SkillTool.get_name(),
         ],
     },
 }

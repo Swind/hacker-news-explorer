@@ -1,6 +1,7 @@
 """Subagent system prompts."""
 from datetime import datetime
 from agents.config import AGENT_TYPES
+from skills.loader import SKILLS
 
 def get_subagent_prompt(agent_type: str, workdir: str) -> str:
     """Generate system prompt for specific subagent type."""
@@ -10,6 +11,9 @@ def get_subagent_prompt(agent_type: str, workdir: str) -> str:
     template = f"""You are a {agent_type} subagent at {workdir}.
 
 Today's date: {today}
+
+**Skills available** (invoke with Skill tool when task matches):
+{SKILLS.get_descriptions()}
 
 {config.get('description', '')}
 
