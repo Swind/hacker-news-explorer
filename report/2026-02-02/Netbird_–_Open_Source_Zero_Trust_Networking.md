@@ -4,7 +4,9 @@ hn_url: https://news.ycombinator.com/item?id=46844870
 title: "Netbird – Open Source Zero Trust Networking"
 verdict: interesting
 created_at: 2026-02-02T02:34:36
+updated_at: 2026-02-03T04:49:39
 ---
+
 
 # Netbird - 开源零信任网络平台
 
@@ -109,3 +111,11 @@ Netbird 是零信任网络领域一个有价值的开源项目，特别适合需
 - 对成本敏感且可接受商业 SaaS 的团队
 
 该项目的高关注度（646 点，245+ 评论）反映了开源零信任解决方案的市场需求，值得持续关注其发展。
+
+---
+
+## 更新 (2026-02-03)
+
+**最新統計：** 截至 2026-02-03，本故事已獲得 **719 點**和 **274 則評論**，持續保持高討論熱度。
+
+持續的關注度顯示開發者社群對開源零信任網路解決方案仍有強烈需求，特別是在尋找 Tailscale、ZeroTier 等商業方案的自托管替代品。
