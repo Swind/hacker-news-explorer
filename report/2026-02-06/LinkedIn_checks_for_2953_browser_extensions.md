@@ -1,0 +1,110 @@
+---
+story_id: 46904361
+hn_url: https://news.ycombinator.com/item?id=46904361
+title: "LinkedIn checks for 2953 browser extensions"
+verdict: interesting
+created_at: 2026-02-06T08:30:41
+---
+
+# LinkedIn 检测 2953 个浏览器扩展 (2026-02-06)
+
+**来源信息**
+- HN 故事 ID: 46904361
+- 链接: https://news.ycombinator.com/item?id=46904361
+- 得分: 387 点
+- 评论数: 186 条
+- GitHub 仓库: https://github.com/mdp/linkedin-extension-fingerprinting
+
+## 摘要
+
+LinkedIn 在每次页面加载时静默探测用户安装的 **2,953 个 Chrome 浏览器扩展**，通过尝试访问扩展的 Web 可访问资源（如图片、HTML 文件）来判断扩展是否存在。该行为通过 LinkedIn 的 `fingerprint.js` 脚本实现，包含一个巨大的 JSON 字面量，列出所有待检测的扩展 ID 和对应的资源文件路径。研究人员指出，约 78% 的扩展可在 Chrome Web Store 找到，其余 22% 已从商店移除或不可用。
+
+## 為什麼有趣
+
+### 隐私与监控影响
+
+1. **扩展指纹追踪**：LinkedIn 通过探测浏览器扩展构建用户指纹，这是一种高度侵入性的监控技术。与 Firefox 不同（使用随机 UUID 防止此类追踪），Chrome 的扩展 ID 是固定的，使得跨网站追踪成为可能。
+
+2. **反爬虫的双重标准**：LinkedIn 一方面积极阻止用户爬取其公开数据，另一方面却在用户不知情的情况下大规模收集用户浏览器信息。这种"只许州官放火，不许百姓点灯"的做法引发社区强烈反感。
+
+3. **技术实现成本低廉**：评论指出，这种检测并非" sophisticated"，只是基于名称（如包含 "email"、"talent"、"recruiting"）的列表匹配。许多被检测的扩展甚至没有请求访问 linkedin.com 的权限，意味着 LinkedIn 可能是在构建用户画像而非仅检测爬虫工具。
+
+4. **性能问题**：用户报告 LinkedIn 页面会导致电脑风扇狂转，怀疑其脚本在后台进行大量资源探测。
+
+### 技术细节
+
+- **检测机制**：通过 `<link rel="stylesheet">` 或 `<img>` 标签尝试加载扩展资源，成功加载即表示扩展已安装
+- **数据规模**：2,953 个扩展 ID 嵌入在 2.15 MB 的 JavaScript 文件中（第 34,394 行开始）
+- **Firefox 的隐私保护**：使用随机 UUID 替代固定扩展 ID，有效防止此类指纹追踪
+
+## 主要讨论点
+
+### 1. 隐私担忧与用户权利
+
+> "Do they respect my data? Why do they get to track me across sites when I clearly don't want them to but someone can't scrape their data when they don't want them to."
+
+用户批评大公司的双重标准：LinkedIn 可以大规模追踪用户，却禁止个人爬取公开数据。这种不对称性被认为是"self defense"（自卫）式对抗的合理理由。
+
+### 2. 技术实现与效果评估
+
+- **并非高科技**：评论指出该检测列表主要基于扩展名称匹配，如包含 "LinkedIn"、"talent"、"recruiting" 等关键词
+- **误检测问题**：许多被检测的扩展并未请求 linkedin.com 权限，说明这可能是一种广泛的数据收集行为
+- **绕过可能性**：用户可通过 Firefox（使用随机 UUID）或禁用 Web 可访问资源来防范
+
+### 3. 爬虫与反爬虫的伦理辩论
+
+社区对 LinkedIn 的反爬虫政策存在分歧：
+
+**支持方观点**：
+- LinkedIn 有权保护其数据和服务质量
+- 爬虫会导致平台充斥垃圾申请，降低用户体验
+- "如果网站规则说不允许爬取，那么执行规则的人不应受到敌视"
+
+**反对方观点**：
+- LinkedIn 数据主要来自用户贡献，不应被公司垄断
+- 爬取公开数据不构成"滥用"，只要不导致服务器过载
+- LinkedIn 自身的数据收集行为同样具有侵略性
+
+### 4. 法律与监管讨论
+
+- **Chrome Web Store TOS 违反**：LinkedIn 为构建扩展数据库，很可能违反了 Chrome Web Store 的服务条款（通过爬虫收集扩展数据）
+- **ToS 的法律效力**：评论指出，违反服务条款并非违法行为，警察不会因此抓人，但企业经常将内部规则"神话化"
+- **历史案例**：提及 Sony CD rootkit 事件，说明"执行规则"不能成为侵犯用户隐私的理由
+
+### 5. 技术方案对比
+
+| 特性 | Chrome | Firefox |
+|------|--------|---------|
+| 扩展 ID | 固定 32 字符 | 随机 UUID（每次浏览器重启变化） |
+| 可被指纹追踪 | ✅ 是 | ❌ 否 |
+| Web 可访问资源 | 默认开启 | 需明确声明 |
+
+### 6. 潜在解决方案
+
+- **用户层面**：使用 Firefox、安装隐私保护扩展、禁用可疑脚本
+- **平台层面**：Chrome 应学习 Firefox 的随机 UUID 机制
+- **监管层面**：需要明确的数据保护法律，限制企业对用户设备的探测行为
+
+## 評價
+
+**值得閱讀** ⭐⭐⭐⭐
+
+这是一个兼具技术深度和社会意义的故事：
+
+✅ **隐私影响重大**：展示了大型社交媒体公司如何通过浏览器扩展进行大规模用户监控
+
+✅ **技术对比价值高**：Chrome 与 Firefox 在隐私设计上的差异值得了解
+
+✅ **引发重要讨论**：关于数据所有权、爬虫伦理、企业双重标准等议题的辩论具有长期价值
+
+✅ **实用信息**：GitHub 仓库提供了完整的扩展列表和检测工具，对隐私研究者和安全研究人员有价值
+
+⚠️ **争议性中等**：虽然存在观点分歧，但社区对 LinkedIn 的行为普遍持批评态度，并非高度两极化的话题
+
+**推荐阅读人群**：隐私关注者、安全研究员、Web 开发者、政策制定者
+
+---
+
+**相关资源**：
+- [GitHub: mdp/linkedin-extension-fingerprinting](https://github.com/mdp/linkedin-extension-fingerprinting)
+- [Firefox 扩展 UUID 文档](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/Web...)
