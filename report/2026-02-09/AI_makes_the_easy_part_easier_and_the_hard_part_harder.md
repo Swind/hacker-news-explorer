@@ -4,7 +4,9 @@ hn_url: https://news.ycombinator.com/item?id=46939593
 title: ""AI makes the easy part easier and the hard part harder""
 verdict: interesting
 created_at: 2026-02-09T10:48:50
+updated_at: 2026-02-10T03:34:38
 ---
+
 
 # 2026-02-09: AI 讓簡單的部分更簡單，困難的部分更困難
 
@@ -53,3 +55,58 @@ created_at: 2026-02-09T10:48:50
 3. **實用建議**：展示了正確使用 AI 的方式—讓它處理調查繁重工作，但由人類提供脈絡和驗證
 
 文章沒有簡單地擁抱或拒絕 AI，而是提供了細緻的觀點，幫助開發者和管理者做出更明智的決策。這是當前 AI 熱潮中必要的冷靜反思。
+
+---
+
+## 補充分析（2026-02-10 更新）
+
+### 社群討論深化
+
+自分析報告撰寫以來，評論數從 244 增加到 341，討論持續深入。以下是補充的重要觀點：
+
+#### License 與著作權討論的進一步發展
+
+1. **「令人難為情的已解決問題」概念**
+   - 社群成員指出 AI 在有大量 GitHub 範例的領域（如模擬器）表現異常優異
+   - 這些解答存在於 LLM 的 latent space，可以被隨時輸出而無授權聲明
+   - 被稱為「License Washing」——AI 實際上是在「洗掉」原有的開源授權
+
+2. **實際抄襲案例**
+   - 有讀者報告定期看到 AI 輸出 100% 抄襲自特定專案的大段程式碼
+   - 透過搜尋程式碼片段可以輕易找到原始來源
+   - 某公司已設置 presubmit 檢查來偵測 AI 生成程式碼的「recitation」（逐字複製）
+
+3. **著作權改革契機的錯失**
+   - 一個深刻觀察：原本大公司使用版權內容可能推動著作權法改革
+   - 但「反對著作權的人一夜之間變成了堅定的著作權支持者」
+   - AI 公司現在已經投入巨資，反對對自己不利的改革
+
+#### 程式生產力與著作權的悖論
+
+一個讀者提出觀察：
+> "Programming productivity has been crippled for decades by the inability to reuse code due to copyright restrictions... Now using AI one can circumvent all copyright laws, gaining in productivity about as much as what you could have done in the past, had you been permitted to copy and paste anything into your programs."
+
+這觸及了一個核心問題：
+- 如果允許 AI 繞過著作權限制，為什麼人類開發者不能？
+- 法律平等原則：即使法律本身有問題，也不應該允許特定公司違法而個人受罰
+
+#### AI 使用實務的更多案例
+
+1. **成功案例分享**
+   - 有讀者分享使用 Gemini 3 成功「vibe coded」復古模擬器和組譯器
+   - 但同時嘗試在高度專有的技術領域失敗——GitHub 上零範例
+
+2. **「AI 沒有逐字複製」的反駁**
+   - 有讀者聲稱沒有看到實際案例
+   - 但立即有其他人反駁，提到研究人員能讓模型逐字重現文學作品
+   - 抄襲不需要 100% 逐字——改名稱或改一個空格仍然是抄襲
+
+### 更新後的綜合評價
+
+這篇文章引發的討論已經超越單純的「AI 如何使用」，進入到：
+
+1. **法律與倫理層面**：AI 與人類在著作權法前的平等問題
+2. **開源精神層面**：GPL 和其他開源授權在 AI 時代的意義
+3. **社會改革層面**：AI 是否推動或阻礙了著作權法的必要改革
+
+**這使得文章的價值從單純的技術見解，提升為對整個 AI 時代法律與倫理框架的深刻反思。**
