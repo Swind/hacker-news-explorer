@@ -2,8 +2,10 @@
 """Base agent with shared loop logic."""
 import time
 from abc import ABC, abstractmethod
+
 from anthropic import Anthropic
-from config import MODEL, MAX_TOKENS
+
+from config import MAX_TOKENS, MODEL
 
 # Retry configuration
 MAX_RETRIES = 3
@@ -11,7 +13,9 @@ RETRY_DELAY = 1.0  # seconds
 BACKOFF_FACTOR = 2.0
 
 
-def retry_api_call(func, *args, max_retries=MAX_RETRIES, initial_delay=RETRY_DELAY, **kwargs):
+def retry_api_call(
+    func, *args, max_retries=MAX_RETRIES, initial_delay=RETRY_DELAY, **kwargs
+):
     """Retry an API call with exponential backoff.
 
     Args:
@@ -37,17 +41,30 @@ def retry_api_call(func, *args, max_retries=MAX_RETRIES, initial_delay=RETRY_DEL
             last_error = e
             # Check if error is retryable (network errors, rate limits, server errors)
             error_str = str(e).lower()
-            is_retryable = any(keyword in error_str for keyword in [
-                'timeout', 'connection', 'network', 'rate limit',
-                '429', '500', '502', '503', '504', 'temporarily'
-            ])
+            is_retryable = any(
+                keyword in error_str
+                for keyword in [
+                    "timeout",
+                    "connection",
+                    "network",
+                    "rate limit",
+                    "429",
+                    "500",
+                    "502",
+                    "503",
+                    "504",
+                    "temporarily",
+                ]
+            )
 
             if not is_retryable:
                 # Don't retry non-retryable errors (auth, invalid params, etc.)
                 raise
 
             if attempt < max_retries - 1:
-                print(f"  ⚠️  API call failed (attempt {attempt + 1}/{max_retries}): {e}")
+                print(
+                    f"  ⚠️  API call failed (attempt {attempt + 1}/{max_retries}): {e}"
+                )
                 print(f"  🔄 Retrying in {delay:.1f}s...")
                 time.sleep(delay)
                 delay *= BACKOFF_FACTOR
@@ -88,7 +105,6 @@ class BaseAgent(ABC):
 # =============================================================================
 
 from skills.loader import SKILLS
-
 
 SKILL_TOOL = {
     "name": "Skill",
@@ -186,8 +202,11 @@ class TodoManager:
         if in_progress > 1:
             raise ValueError("Only one task can be in_progress at a time")
 
-        self.items = validated[:20]  # Max 20 items
-        return self.render()
+        self.items = validated
+
+        result = self.render()
+        print("\nTODO LIST:\n" + result)
+        return result
 
     def render(self) -> str:
         """Render the current todo list as a string."""
@@ -209,4 +228,3 @@ class TodoManager:
     def get_items(self) -> list:
         """Return the current items list."""
         return self.items.copy()
-

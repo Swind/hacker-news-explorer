@@ -6,7 +6,7 @@ from config import DEBUG, MAX_TOKENS, MAX_TOOL_CALLS, MODEL, WORKDIR
 from prompts.system import SYSTEM_PROMPT
 from tools import get_tool_class, get_tool_schemas
 
-from .base import BaseAgent, retry_api_call, TodoManager
+from .base import BaseAgent, TodoManager, retry_api_call
 from .config import AGENT_TYPES
 
 
@@ -72,7 +72,9 @@ class NewsExplorerAgent(BaseAgent):
         else:
             print(f"  [{agent_type}] {description}")
 
-        subagent = SubAgent(self.client, agent_type, allowed_tools, str(WORKDIR), self.todo_manager)
+        subagent = SubAgent(
+            self.client, agent_type, allowed_tools, str(WORKDIR), self.todo_manager
+        )
         return subagent.run(prompt)
 
     def _get_context(self) -> dict:
@@ -107,6 +109,7 @@ class NewsExplorerAgent(BaseAgent):
                 print(f"🤖 [DEBUG] Step {self.tool_call_count + 1}")
                 print(f"{'=' * 60}")
                 print(f"📋 Available tools: {[t['name'] for t in self.tools]}")
+                print(f" Prompt: { self.get_system_prompt() }")
                 print(f"\n📨 Sending to LLM:")
                 for msg in messages[-2:] if len(messages) > 2 else messages:
                     role = msg.get("role", "unknown")

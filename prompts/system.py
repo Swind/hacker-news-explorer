@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from skills.loader import SKILLS
+
 from .templates import CHINESE_OUTPUT_TEMPLATE
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
@@ -32,36 +33,6 @@ Find stories worth the user's attention:
 3. For each story in your todo list, **spawn a subagent** using `Task` with agent_type="analyze_story"
 4. Update todo list as subagents complete their work
 5. After all tasks done, call `finish_exploration` with summary
-
-## Using TodoWrite
-
-TodoWrite helps track which stories to analyze. Create a todo list after scanning stories:
-
-```
-TodoWrite(items=[
-    {{
-        "content": "Analyze Notepad++ hijacking (46851548)",
-        "status": "pending",
-        "activeForm": "Analyzing Notepad++ hijacking"
-    }},
-    {{
-        "content": "Analyze GPS tracking story (46838597)",
-        "status": "pending",
-        "activeForm": "Analyzing GPS tracking story"
-    }},
-    // ... more stories
-])
-```
-
-**Status options:**
-- `pending`: Not started yet
-- `in_progress`: Currently working (only one at a time!)
-- `completed`: Finished
-
-**Constraints:**
-- Maximum 20 items per todo list
-- Only one task can be `in_progress` at a time
-- Mark tasks as `completed` when subagent finishes
 
 ## File Output Format
 
